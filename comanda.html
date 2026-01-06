@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Comanda de Garçom - Boteco do Belém</title>
+<style>
+body{margin:0;font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;background:#121212;color:#fff}
+header{background:linear-gradient(135deg,#8B4513 0%, #D2691E 100%);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header img{height:40px}
+a{color:#FFD700;text-decoration:none;font-weight:700}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+.panel{background:#1e1e1e;border-radius:14px;border:1px solid rgba(255,255,255,.12);padding:14px;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>div{flex:1 1 160px}
+.label{font-size:11px;color:#b6b6b6;margin-bottom:4px;font-weight:700}
+.input,textarea,select{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.18);padding:8px;background:#111;color:#fff;font-size:13px}
+textarea{resize:vertical;min-height:64px}
+.btnRow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{border-radius:999px;border:0;padding:10px 14px;font-weight:800;cursor:pointer;font-size:13px}
+.btn.primary{background:#FFD700;color:#121212}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff}
+.btn.success{background:#4caf50;color:#fff}
+.small{font-size:11px;color:#b6b6b6;margin-top:6px}
+.tableWrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;min-width:860px}
+th,td{border:1px solid rgba(255,255,255,.18);padding:6px;text-align:left;vertical-align:top}
+th{background:#2a2a2a;font-size:11px;font-weight:900}
+.money{text-align:right;white-space:nowrap}
+.center{text-align:center}
+.ticket-preview{background:#fff;color:#000;font-family:"Courier New",monospace;max-width:80mm;margin:10px auto;padding:8px;font-size:11px;border:1px solid #ccc}
+.ticket-preview pre{white-space:pre-wrap;margin:0}
+.totalBox{background:#2a2a2a;border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:12px;margin-top:10px}
+.totalRow{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:#ddd}
+.totalRow.big{font-size:20px;font-weight:900;color:#FFD700;margin-top:8px;border-top:1px solid rgba(255,255,255,.18);padding-top:8px}
+@media print{
+  body{background:#fff;color:#000}
+  .no-print{display:none}
+  .ticket-preview{box-shadow:none;margin:0 auto;border:none}
+}
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div style="font-weight:900;font-size:14px">Comanda de Garçom</div>
+  </div>
+  <a href="./index.html">Voltar ao site</a>
+</header>
+
+<div class="wrap">
+  <div class="panel no-print">
+    <div style="font-weight:900;margin-bottom:10px;font-size:15px">Dados da comanda</div>
+    <div class="row">
+      <div><div class="label">Comanda</div><input class="input" id="cNum" placeholder="001" /></div>
+      <div><div class="label">Mesa</div><input class="input" id="cMesa" placeholder="A1" /></div>
+      <div><div class="label">Garçom</div><input class="input" id="cGarcom" value="DENI" readonly style="font-weight:900;color:#FFD700" /></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div><div class="label">Data</div><input class="input" id="cData" /></div>
+      <div><div class="label">Hora</div><input class="input" id="cHora" /></div>
+    </div>
+    <div class="small">Selecione o produto, ajuste quantidade e coloque OBS por item se precisar. Preço e total do item são calculados automaticamente.</div>
+  </div>
+
+  <div class="panel no-print">
+    <div style="font-weight:900;margin-bottom:6px;font-size:15px">Itens</div>
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:240px">Produto (cód - nome)</th>
+            <th>Descrição</th>
+            <th class="center" style="width:70px">Qtd</th>
+            <th class="money" style="width:110px">Preço</th>
+            <th class="money" style="width:110px">Total</th>
+            <th style="width:220px">Obs</th>
+          </tr>
+        </thead>
+        <tbody id="itensBody"></tbody>
+      </table>
+    </div>
+
+    <div class="totalBox">
+      <div class="totalRow">
+        <span>Subtotal (calculado)</span>
+        <span id="totalCalc">R$ 0,00</span>
+      </div>
+      <div class="totalRow big">
+        <span>Total</span>
+        <span id="totalCalc2">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div class="btnRow">
+      <button class="btn success" type="button" onclick="salvarComanda(true)">Salvar/Atualizar comanda</button>
+      <button class="btn primary" type="button" onclick="imprimir('80')">Imprimir 80mm</button>
+      <button class="btn ghost" type="button" onclick="imprimir('58')">Imprimir 58mm</button>
+    </div>
+    <div class="small">Ao imprimir, a comanda é salva automaticamente no histórico (para o Caixa).</div>
+  </div>
+
+  <div class="panel no-print">
+    <div class="label">Observações gerais (opcional)</div>
+    <textarea id="cObs" class="input" placeholder="Ex.: cliente com pressa, aniversariante, etc."></textarea>
+  </div>
+
+  <div id="previewContainer" class="ticket-preview" style="display:none">
+    <pre id="previewText"></pre>
+  </div>
+</div>
+
+<script>
+let PRODUTOS = [];
+let CURRENT_TS = null;
+
+const LS_PRODUCTS_KEY = 'boteco_products_v1';
+const LS_COMANDAS_KEY = 'boteco_comandas_historico';
+
+async function carregarProdutos(){
+  try{
+    const ls = localStorage.getItem(LS_PRODUCTS_KEY);
+    if(ls){
+      PRODUTOS = JSON.parse(ls) || [];
+      return;
+    }
+  }catch(e){}
+  try{
+    const r = await fetch('./assets/data/products.default.json', {cache:'no-store'});
+    if(r.ok){
+      PRODUTOS = await r.json();
+      localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(PRODUTOS));
+    }
+  }catch(e){
+    PRODUTOS = [];
+  }
+}
+
+function preencherDataHora(){
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('cData').value = dd+'/'+mm+'/'+yyyy;
+  document.getElementById('cHora').value = hh+':'+mi;
+}
+
+function buscarProdutoPorCodigo(cod){
+  if(!cod) return null;
+  const c = String(cod).trim().toUpperCase();
+  return (PRODUTOS||[]).find(p => String(p.code||'').toUpperCase() === c) || null;
+}
+
+function formatMoney(v){
+  return 'R$ ' + Number(v||0).toFixed(2).replace('.',',');
+}
+
+function loadList(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return [];
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveList(key, arr){
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+function parseMoneyToNumber(text){
+  const s = String(text||'').replace('R$','').trim().replace(/\./g,'').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function montarLinhas(){
+  const tbody = document.getElementById('itensBody');
+  tbody.innerHTML = '';
+
+  const list = (PRODUTOS||[]).slice().sort((a,b)=>{
+    const ca = String(a.code||'');
+    const cb = String(b.code||'');
+    return ca.localeCompare(cb, 'pt-BR');
+  });
+
+  for(let i=0;i<12;i++){
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' +
+        '<select class="input" data-cod style="font-size:11px;padding:6px 8px">' +
+          '<option value="">Selecionar...</option>' +
+        '</select>' +
+      '</td>' +
+      '<td><input class="input" data-desc style="font-size:11px;padding:6px 8px" placeholder="Descrição (auto)" /></td>' +
+      '<td><input class="input center" data-qtd style="font-size:11px;padding:6px 8px" maxlength="3" placeholder="1" /></td>' +
+      '<td><input class="input money" data-preco style="font-size:11px;padding:6px 8px" readonly /></td>' +
+      '<td><input class="input money" data-total style="font-size:11px;padding:6px 8px" readonly /></td>' +
+      '<td><input class="input" data-obs style="font-size:11px;padding:6px 8px" placeholder="Obs do item" /></td>';
+
+    tbody.appendChild(tr);
+
+    const sel = tr.querySelector('select[data-cod]');
+    const descInput = tr.querySelector('input[data-desc]');
+    const qtdInput = tr.querySelector('input[data-qtd]');
+    const precoInput = tr.querySelector('input[data-preco]');
+    const totalInput = tr.querySelector('input[data-total]');
+    const obsInput = tr.querySelector('input[data-obs]');
+
+    list.forEach(p=>{
+      const code = String(p.code||'');
+      const name = String(p.name||'');
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = (code ? code+' - ' : '') + name;
+      sel.appendChild(opt);
+    });
+
+    function recalcularLinha(){
+      const code = sel.value || '';
+      const prod = buscarProdutoPorCodigo(code);
+      const price = prod ? Number(prod.price || 0) : 0;
+
+      // quantidade
+      let q = parseInt(qtdInput.value || '0', 10);
+      if(!q || q < 0) q = 0;
+
+      // preenche preço e total
+      precoInput.value = formatMoney(price);
+      totalInput.value = formatMoney(price * q);
+
+      calcularTotalNaTela();
+    }
+
+    sel.addEventListener('change', function(){
+      const prod = buscarProdutoPorCodigo(sel.value);
+      if(prod){
+        if(!descInput.value) descInput.value = String(prod.name||'');
+        if(!qtdInput.value) qtdInput.value = '1';
+      }
+      recalcularLinha();
+    });
+
+    qtdInput.addEventListener('input', function(){
+      // normaliza
+      let q = parseInt(qtdInput.value || '0', 10);
+      if(!q || q < 0) q = 0;
+      qtdInput.value = q ? String(q) : '';
+      recalcularLinha();
+    });
+
+    descInput.addEventListener('input', function(){
+      calcularTotalNaTela();
+    });
+
+    obsInput.addEventListener('input', function(){
+      // não recalcula
+    });
+
+    // inicializa vazio
+    precoInput.value = formatMoney(0);
+    totalInput.value = formatMoney(0);
+  }
+}
+
+function coletarItens(){
+  const itens = [];
+  const trs = document.querySelectorAll('#itensBody tr');
+
+  trs.forEach(tr=>{
+    const sel = tr.querySelector('select[data-cod]');
+    const descInput = tr.querySelector('input[data-desc]');
+    const qtdInput = tr.querySelector('input[data-qtd]');
+    const obsInput = tr.querySelector('input[data-obs]');
+
+    const code = (sel && sel.value) ? String(sel.value).toUpperCase() : '';
+    const desc = (descInput && descInput.value) ? String(descInput.value).trim() : '';
+    const qtd = parseInt((qtdInput && qtdInput.value) ? qtdInput.value : '0', 10) || 0;
+    const obs = (obsInput && obsInput.value) ? String(obsInput.value).trim() : '';
+
+    if(!code && !desc && !qtd && !obs) return;
+    if(qtd <= 0) return;
+
+    const prod = buscarProdutoPorCodigo(code);
+    const price = prod ? Number(prod.price || 0) : 0;
+
+    itens.push({
+      code: code,
+      name: desc || (prod ? String(prod.name||'') : ''),
+      qtd: qtd,
+      price: price,
+      total: price * qtd,
+      obs: obs
+    });
+  });
+
+  return itens;
+}
+
+function calcularTotalNaTela(){
+  const itens = coletarItens();
+  const total = itens.reduce((s,i)=> s + Number(i.total||0), 0);
+  document.getElementById('totalCalc').textContent = formatMoney(total);
+  document.getElementById('totalCalc2').textContent = formatMoney(total);
+  return total;
+}
+
+function salvarComanda(showAlert){
+  const num = (document.getElementById('cNum').value || '').trim();
+  const mesa = (document.getElementById('cMesa').value || '').trim();
+  const garcom = (document.getElementById('cGarcom').value || 'DENI').trim();
+  const data = (document.getElementById('cData').value || '').trim();
+  const hora = (document.getElementById('cHora').value || '').trim();
+  const obsGeral = (document.getElementById('cObs').value || '').trim();
+
+  if(!num){
+    alert('Preencha o número da comanda.');
+    return null;
+  }
+
+  const itens = coletarItens();
+  if(itens.length === 0){
+    alert('Adicione pelo menos 1 item com quantidade.');
+    return null;
+  }
+
+  const total = itens.reduce((s,i)=> s + Number(i.total||0), 0);
+
+  if(!CURRENT_TS) CURRENT_TS = new Date().toISOString();
+
+  const registro = {
+    timestamp: CURRENT_TS,
+    numero: num,
+    mesa: mesa,
+    garcom: garcom,
+    data: data,
+    hora: hora,
+    obsGeral: obsGeral,
+    itens: itens,
+    total: total
+  };
+
+  const lista = loadList(LS_COMANDAS_KEY);
+  const idx = lista.findIndex(x => x && x.timestamp === CURRENT_TS);
+  if(idx >= 0) lista[idx] = registro;
+  else lista.push(registro);
+
+  saveList(LS_COMANDAS_KEY, lista);
+
+  if(showAlert) alert('Comanda salva/atualizada com sucesso.');
+  return registro;
+}
+
+function gerarTexto(largura){
+  const reg = salvarComanda(false);
+  if(!reg) return null;
+
+  const w = (largura === '58') ? 32 : 42;
+
+  function center(t){
+    t = String(t||'');
+    if(t.length >= w) return t.substring(0,w);
+    const esp = Math.floor((w - t.length)/2);
+    return ' '.repeat(esp) + t;
+  }
+
+  function wrap(prefix, text){
+    const out = [];
+    const p = String(prefix||'');
+    let t = String(text||'').trim();
+    const availFirst = Math.max(1, w - p.length);
+
+    if(!t) return out;
+
+    let first = t;
+    if(first.length > availFirst) first = first.substring(0, availFirst);
+    out.push(p + first);
+    t = t.substring(first.length).trim();
+
+    while(t.length > 0){
+      let part = t;
+      if(part.length > w) part = part.substring(0, w);
+      out.push(part);
+      t = t.substring(part.length).trim();
+    }
+    return out;
+  }
+
+  const linhas = [];
+  linhas.push(center('BOTECO DO BELEM'));
+  linhas.push(center('COMANDA DE GARCOM'));
+  linhas.push('-'.repeat(w));
+  linhas.push('Comanda: ' + (reg.numero||''));
+  linhas.push('Mesa   : ' + (reg.mesa||''));
+  linhas.push('Garcom : ' + (reg.garcom||''));
+  linhas.push('Data   : ' + (reg.data||'') + '  Hora: ' + (reg.hora||''));
+  linhas.push('-'.repeat(w));
+  linhas.push('ITENS:');
+  linhas.push('-'.repeat(w));
+
+  (reg.itens||[]).forEach(i=>{
+    const qtd = Number(i.qtd||0);
+    const nm = String(i.name||'').toUpperCase();
+    const code = String(i.code||'').toUpperCase();
+    const obs = String(i.obs||'').trim();
+    const unit = Number(i.price||0);
+    const tot = Number(i.total||0);
+
+    wrap('', `${qtd}x ${nm}${code ? ' ('+code+')' : ''}`).forEach(x=>linhas.push(x));
+    wrap('  ', `PRECO: ${formatMoney(unit)}  TOTAL: ${formatMoney(tot)}`).forEach(x=>linhas.push(x));
+
+    if(obs){
+      linhas.push('  OBS:');
+      wrap('   ', obs.toUpperCase()).forEach(x=>linhas.push(x));
+    }
+    linhas.push('');
+  });
+
+  linhas.push('-'.repeat(w));
+  linhas.push('TOTAL: ' + formatMoney(Number(reg.total||0)));
+  linhas.push('-'.repeat(w));
+
+  if(reg.obsGeral){
+    linhas.push('OBS GERAIS:');
+    wrap('  ', String(reg.obsGeral).toUpperCase()).forEach(x=>linhas.push(x));
+    linhas.push('-'.repeat(w));
+  }
+
+  linhas.push(center('*** PRODUCAO ***'));
+  linhas.push('');
+  return linhas.join('\n');
+}
+
+function imprimir(largura){
+  const texto = gerarTexto(largura);
+  if(!texto) return;
+
+  const prev = document.getElementById('previewContainer');
+  document.getElementById('previewText').textContent = texto;
+  prev.style.display = 'block';
+
+  const win = window.open('', 'PRINT', 'height=650,width=420');
+  const css =
+    '<style>' +
+    '@page{size:' + (largura === '58' ? '58mm' : '80mm') + ' auto;margin:2mm;}' +
+    'body{font-family:"Courier New",monospace;font-size:11px;margin:0;}' +
+    'pre{white-space:pre-wrap;margin:0;}' +
+    '</style>';
+
+  win.document.write('<html><head><meta charset="UTF-8">' + css + '</head><body><pre>' + texto + '</pre></body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(function(){ win.print(); }, 250);
+}
+
+addEventListener('DOMContentLoaded', async function(){
+  await carregarProdutos();
+  preencherDataHora();
+  montarLinhas();
+
+  const g = document.getElementById('cGarcom');
+  if(g){ g.value='DENI'; g.readOnly=true; }
+
+  calcularTotalNaTela();
+});
+</script>
+</body>
+</html>

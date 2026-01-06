@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#111827" />
+<title>Boteco do Belém — Cardápio</title>
+<meta name="description" content="Hamburgueria Artesanal de Verdade. Peça direto pelo WhatsApp." />
+<style>
+:root{
+--bg:#0b1220;
+--panel:#0f172a;
+--card:#111c33;
+--text:#e5e7eb;
+--muted:#9ca3af;
+--primary:#22c55e;
+--primary2:#16a34a;
+--danger:#ef4444;
+--border:rgba(255,255,255,.08);
+--shadow: 0 10px 30px rgba(0,0,0,.35);
+--radius: 14px;
+--radius2: 18px;
+--max: 1100px;
+--font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  background: radial-gradient(1200px 700px at 10% 0%, rgba(34,197,94,.12), transparent 60%),
+              radial-gradient(800px 500px at 90% 10%, rgba(59,130,246,.12), transparent 55%),
+              var(--bg);
+  color:var(--text);
+}
+
+a{color:inherit;text-decoration:none}
+.container{max-width:var(--max); margin:0 auto; padding:18px 16px 36px}
+
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 16px;
+  background: rgba(15,23,42,.9);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.brand{display:flex; gap:12px; align-items:center}
+.brand__logo{
+  width:42px;height:42px;border-radius:12px;
+  display:grid;place-items:center;
+  padding:0;
+  background:transparent;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.brand__logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.brand__name{font-weight:800; letter-spacing:.2px}
+.brand__sub{font-size:12px; color:var(--muted); margin-top:2px}
+
+.btn{
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  padding:10px 12px;
+  border-radius: 12px;
+  cursor:pointer;
+  transition:.15s transform, .15s background, .15s border, .15s filter;
+  font-size:14px;
+}
+.btn:active{transform:scale(.98)}
+.btn--ghost:hover{background: rgba(255,255,255,.06)}
+.btn--primary{
+  border:none;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color:#052e16;
+  font-weight:800;
+}
+.btn--primary:hover{filter:brightness(1.05)}
+.btn--full{width:100%; margin-top:10px}
+
+.badge{
+  margin-left:8px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.12);
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+.hero{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap:16px;
+  padding:16px 0 10px;
+}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr}
+}
+
+.hero__left{
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius: var(--radius2);
+  background: rgba(17,28,51,.8);
+  box-shadow:var(--shadow);
+}
+.hero__left h1{margin:0 0 8px; font-size:28px}
+.hero__left p{margin:0; color:var(--muted)}
+.hero__meta{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+.pill{
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:13px;
+  color: var(--text);
+}
+
+.hero__right{
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius: var(--radius2);
+  background: rgba(17,28,51,.6);
+}
+
+.search__input{
+  width:100%;
+  border:1px solid var(--border);
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  padding:12px 12px;
+  border-radius: 12px;
+  outline:none;
+}
+.search__input::placeholder{color: rgba(229,231,235,.55)}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.chip{
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:13px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.chip--active{
+  border:none;
+  background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(34,197,94,.35));
+  color:#052e16;
+  font-weight:800;
+}
+
+.grid{padding-top:8px}
+#products{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:12px;
+}
+@media (max-width:980px){#products{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){#products{grid-template-columns:1fr}}
+
+.product{
+  border:1px solid var(--border);
+  background: rgba(17,28,51,.9);
+  border-radius: var(--radius2);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+}
+.product__img{
+  height:140px;
+  background:
+    radial-gradient(450px 150px at 20% 20%, rgba(34,197,94,.18), transparent 55%),
+    radial-gradient(450px 150px at 80% 20%, rgba(59,130,246,.14), transparent 50%),
+    rgba(0,0,0,.25);
+  border-bottom:1px solid var(--border);
+}
+.product__body{padding:14px}
+.product__title{font-weight:900; margin:0 0 6px; font-size:15px}
+.product__desc{color:var(--muted); margin:0 0 10px; font-size:13px; line-height:1.35}
+.product__footer{display:flex; justify-content:space-between; align-items:center; gap:10px}
+.price{font-weight:900; font-size:15px}
+
+.qty{display:flex; align-items:center; gap:8px}
+.qty__btn{
+  width:30px;height:30px;border-radius:10px;
+  display:grid;place-items:center;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  cursor:pointer;
+  color:var(--text);
+  font-size:16px;
+}
+.qty__btn:hover{background: rgba(255,255,255,.06)}
+.qty__count{min-width:18px; text-align:center; font-weight:800; font-size:13px}
+
+.drawer{position:fixed; inset:0; z-index:50; display:none}
+.drawer--open{display:block}
+.drawer__overlay{position:absolute; inset:0; background: rgba(0,0,0,.55)}
+.drawer__panel{
+  position:absolute; right:0; top:0; bottom:0;
+  width:min(460px, 92vw);
+  background: rgba(15,23,42,.96);
+  backdrop-filter: blur(14px);
+  border-left:1px solid var(--border);
+  box-shadow: var(--shadow);
+  display:flex; flex-direction:column;
+}
+.drawer__header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px;
+  border-bottom:1px solid var(--border);
+}
+.drawer__title{font-weight:900}
+.drawer__content{padding:14px; overflow:auto; flex:1}
+
+.card{
+  border:1px solid var(--border);
+  background: rgba(17,28,51,.85);
+  border-radius: var(--radius2);
+  padding:12px;
+  margin-top:12px;
+}
+.row{margin-bottom:10px}
+.row--hidden{display:none}
+.label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+.input,.textarea{
+  width:100%;
+  border:1px solid var(--border);
+  background: rgba(0,0,0,.25);
+  color: var(--text);
+  padding:10px 10px;
+  border-radius: 12px;
+  outline:none;
+  font-size:14px;
+}
+.textarea{resize:vertical}
+
+.seg{display:flex; gap:8px}
+.seg__btn{
+  flex:1;
+  padding:10px 10px;
+  border-radius: 12px;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  cursor:pointer;
+  font-weight:800;
+  font-size:14px;
+  color:var(--text);
+}
+.seg__btn--active{
+  border:none;
+  background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(34,197,94,.35));
+  color:#052e16;
+}
+
+.cartItems{display:flex; flex-direction:column; gap:10px}
+.cartItem{
+  display:flex; justify-content:space-between; gap:10px;
+  border:1px solid var(--border);
+  background: rgba(0,0,0,.2);
+  border-radius: 14px;
+  padding:10px;
+}
+.cartItem__name{font-weight:900; font-size:14px}
+.cartItem__meta{font-size:12px; color:var(--muted); margin-top:2px}
+.cartItem__right{text-align:right}
+.cartItem__price{font-weight:900; font-size:14px}
+
+.totals{display:flex; flex-direction:column; gap:8px}
+.totals__row{display:flex; justify-content:space-between; font-size:14px}
+.totals__row--big{font-size:18px}
+.hint{margin-top:10px; font-size:12px; color:rgba(229,231,235,.8)}
+.footerNote{margin-top:14px; font-size:12px; color:var(--muted); line-height:1.4}
+
+@media (max-width:520px){
+  .topbar{padding-inline:10px}
+  .container{padding-inline:12px}
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+<div class="brand">
+<div class="brand__logo">
+<img src="https://tess-cdn.pareto.io/assets/uploads/ec5b18ed-74bb-4a9c-8628-2a4e06acaae6.png" alt="Boteco do Belém" />
+</div>
+<div class="brand__text">
+<div id="storeName" class="brand__name">Boteco do Belém</div>
+<div id="storeStatus" class="brand__sub">Carregando...</div>
+</div>
+</div>
+<div class="topbar__actions">
+<button id="btnOpenCart" class="btn btn--primary" type="button">
+Carrinho <span id="cartCount" class="badge">0</span>
+</button>
+</div>
+</header>
+
+<main class="container">
+<section class="hero">
+<div class="hero__left">
+<h1 id="headline">Hamburgueria Artesanal de Verdade</h1>
+<p id="subheadline">Peça seu hambúrguer artesanal sem burocracia, direto pelo WhatsApp.</p>
+<div class="hero__meta">
+<div class="pill" id="storeHoursPill">Horário: Carregando...</div>
+<div class="pill" id="storeMinPill">Pedido mínimo: --</div>
+</div>
+</div>
+
+  <div class="hero__right">
+    <div class="search">
+      <input id="searchInput" class="search__input" type="search" placeholder="Buscar (ex: Smash, Bacon, Coca)..." />
+    </div>
+    <div class="chips" id="categoryChips"></div>
+  </div>
+</section>
+
+<section class="grid" aria-live="polite">
+  <div id="products"></div>
+</section>
+
+</main>
+
+<aside id="cartDrawer" class="drawer" aria-hidden="true">
+<div class="drawer__overlay" id="cartOverlay"></div>
+<div class="drawer__panel">
+<div class="drawer__header">
+<div class="drawer__title">Seu carrinho</div>
+<button id="btnCloseCart" class="btn btn--ghost" type="button">Fechar</button>
+</div>
+
+  <div class="drawer__content">
+    <div id="cartItems" class="cartItems"></div>
+
+    <div class="card">
+      <div class="row">
+        <label class="label">Seu nome</label>
+        <input id="custName" class="input" type="text" placeholder="Ex: João" />
+      </div>
+
+      <div class="row">
+        <label class="label">Forma</label>
+        <div class="seg">
+          <button id="modePickup" class="seg__btn seg__btn--active" type="button">Retirar</button>
+          <button id="modeDelivery" class="seg__btn" type="button">Entrega</button>
+        </div>
+      </div>
+
+      <div id="deliveryFields" class="row row--hidden">
+        <label class="label">Endereço</label>
+        <input id="custAddr" class="input" type="text" placeholder="Rua, número, bairro, referência" />
+      </div>
+
+      <div class="row">
+        <label class="label">Observação</label>
+        <textarea id="custNote" class="textarea" rows="3" placeholder="Ex: sem cebola, trocar molho, ponto da carne..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="totals">
+        <div class="totals__row"><span>Subtotal</span><strong id="subtotal">R$ 0,00</strong></div>
+        <div class="totals__row"><span>Taxa</span><strong id="fee">R$ 0,00</strong></div>
+        <div class="totals__row totals__row--big"><span>Total</span><strong id="total">R$ 0,00</strong></div>
+      </div>
+
+      <div class="hint" id="minHint"></div>
+
+      <button id="btnCheckout" class="btn btn--primary btn--full" type="button">
+        Finalizar no WhatsApp
+      </button>
+      <button id="btnClearCart" class="btn btn--ghost btn--full" type="button">
+        Limpar carrinho
+      </button>
+    </div>
+
+    <div class="footerNote">
+      <div id="storeAddress"></div>
+      <div id="storePhone"></div>
+    </div>
+  </div>
+</div>
+
+</aside>
+
+<script>
+(function () {
+const config = {
+storeName: "Boteco do Belém",
+headline: "Hamburgueria Artesanal de Verdade",
+subheadline: "Peça seu hambúrguer artesanal sem burocracia, direto pelo WhatsApp.",
+whatsapp: "5549998358251",
+publicPhone: "(49) 99835-8251",
+address: "Rua Rio Grande do Sul, 198 - Bela Vista",
+minOrder: 25,
+deliveryFee: 6,
+forceClosed: false,
+hoursText: "Seg a Dom • 18h às 23h",
+hours: {
+mon: { open: "18:00", close: "23:00" },
+tue: { open: "18:00", close: "23:00" },
+wed: { open: "18:00", close: "23:00" },
+thu: { open: "18:00", close: "23:00" },
+fri: { open: "18:00", close: "23:00" },
+sat: { open: "18:00", close: "23:00" },
+sun: { open: "18:00", close: "23:00" }
+}
+};
+
+  const products = [
+    { code: "1",  name: "SMASH ONE SIMPLES", category: "SMASH",   description: "PÃO BRIOCHE, BLEND 100G, MAIONESE DE QUEIJO, PICLES E CEBOLA.", price: 20 },
+    { code: "2",  name: "SMASH ONE DUPLO",   category: "SMASH",   description: "PÃO BRIOCHE, 2 BLEND 100G, MAIONESE DE QUEIJO, BACON, CEBOLA CARAMELIZADA E PICLE.", price: 28 },
+    { code: "3",  name: "SMASH BACON SIMPLES", category: "SMASH", description: "PÃO BRIOCHE, BLEND 100G, MAIONESE DE QUEIJO, BACON, CEBOLA CARAMELIZADA E PICLES.", price: 27 },
+    { code: "4",  name: "SMASH BACON DUPLO", category: "SMASH",   description: "PÃO BRIOCHE, 2 BLEND 100G, MAIONESE DE QUEIJO, BACON, CEBOLA CARAMELIZADA E PICLES.", price: 35 },
+    { code: "5",  name: "CLASSICO",          category: "BURGER'S", price: 30, description: "PÃO BRIOCHE, BLEND 150G, MUSSARELA, MAIONESE DE QUEIJO, ALFACE, TOMATE, CEBOLA ROXA E PICLES." },
+    { code: "6",  name: "ONIO PORKS",        category: "BURGER'S", price: 35, description: "PÃO BRIOCHE, BLEND 150G, PORKS 75G DESFIADO, MUSSARELA, CREME DE ALHO, BARBECUE, CEBOLA CRISPY." },
+    { code: "7",  name: "BOI RALADO",        category: "BURGER'S", price: 39, description: "PÃO BRIOCHE, BLEND 150G, PONTA DE PEITO DESFIADA 75G, CREME DE ALHO, MUSSARELA, CEBOLA CARAMELIZADA, ALFACE E TOMATE ASSADO." },
+    { code: "8",  name: "TEXAS",             category: "BURGER'S", price: 37, description: "PÃO BRIOCHE, BLEND 150G COM MUSSARELA, ALFACE, TOMATE ASSADO, CEBOLA EMPANADA, MOLHO TEXAS." },
+    { code: "9",  name: "MAC'N AND CHEESE",  category: "PORÇÃO",   price: 30, description: "MASSA COTOVELO COM CREME DE QUEIJO CHEDDAR, PORK DESFIADO, CREME DE ALHO E CEBOLINHA." },
+    { code: "10", name: "FRANGO À PASSARINHO", category: "PORÇÃO", price: 55, description: "FRANGO À PASSARINHO CROCANTE COM BATATA FRITA." },
+    { code: "12", name: "BATATA FRITA",      category: "PORÇÃO",   price: 20, description: "BATATA FRITA COM UM TEMPERO ESPECIAL DA CASA." },
+    { code: "14", name: "BATATA KIDS",       category: "PORÇÃO",   price: 8,  description: "PORÇÃO PEQUENA DE BATATA FRITA PARA ACOMPANHAR SEU BURGER." },
+    { code: "15", name: "COCA LATA",         category: "BEBIDA",   price: 6,  description: "" },
+    { code: "16", name: "ORIGINAL",          category: "BEBIDA",   price: 7,  description: "" },
+    { code: "17", name: "BRAHMA",            category: "BEBIDA",   price: 6,  description: "" },
+    { code: "18", name: "AGUA MINERAL",      category: "BEBIDA",   price: 4,  description: "" },
+    { code: "20", name: "SMASH ONION",       category: "SMASH",   price: 29, description: "PÃO BRIOCHE, BLEND 100G, CEBOLA EMPANADA, PORKS DESFIADO, MUSSARELA E BARBECUE." },
+    { code: "21", name: "SMASH RALADO",      category: "SMASH",   price: 29, description: "PÃO BRIOCHE, BLEND 100G, CARNE DESFIADA, CREME DE ALHO, MUSSARELA, ALFACE, TOMATE E CEBOLA CARAMELIZADA." },
+    { code: "23", name: "BATATA LUXO",       category: "PORÇÃO",  price: 35, description: "FRITAS COM CREME DE CHEDDAR E BACON." },
+    { code: "24", name: "TORRESMO DA BODEGA", category: "PORÇÃO", price: 20, description: "TORRESMO RAIZ FINALIZADO COM LIMÃO E MOLHO BARBECUE." },
+    { code: "25", name: "BOLINHO DA VOVÓ",   category: "PORÇÃO",  price: 25, description: "6 UNIDADES DE BOLINHO COM RECEITA TRADICIONAL DA NONA." },
+    { code: "27", name: "SMASH KIDS",        category: "SMASH",   price: 15, description: "PÃO BRIOCHE, BLEND 100G, QUEIJO MUSSARELA." },
+    { code: "28", name: "AD CEBOLA EMPANADA", category: "ADICIONAL", price: 5, description: "" },
+    { code: "29", name: "AD QUEIJO",         category: "ADICIONAL", price: 6, description: "" },
+    { code: "30", name: "AD BACON",          category: "ADICIONAL", price: 7, description: "" },
+    { code: "31", name: "AD CARNE 150",      category: "ADICIONAL", price: 13, description: "" },
+    { code: "32", name: "GUARANA LATA",      category: "BEBIDA",  price: 6, description: "" },
+    { code: "33", name: "AD CEB CARAMELIZADA", category: "ADICIONAL", price: 5, description: "" },
+    { code: "34", name: "COCA ZERO",         category: "BEBIDA",  price: 6, description: "" },
+    { code: "35", name: "TOMATE",            category: "ADICIONAL", price: 2, description: "" },
+    { code: "36", name: "CEBOLA ROXA",       category: "ADICIONAL", price: 2, description: "" }
+  ];
+
+  const el = (id) => document.getElementById(id);
+  const money = (v) => (v || v === 0)
+    ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    : 'R$ 0,00';
+
+  const state = {
+    config,
+    products,
+    cart: loadCart(),
+    activeCategory: 'Todos',
+    search: '',
+    mode: 'pickup'
+  };
+
+  const dom = {
+    storeName: el('storeName'),
+    storeStatus: el('storeStatus'),
+    storeHoursPill: el('storeHoursPill'),
+    storeMinPill: el('storeMinPill'),
+    storeAddress: el('storeAddress'),
+    storePhone: el('storePhone'),
+    headline: el('headline'),
+    subheadline: el('subheadline'),
+
+    categoryChips: el('categoryChips'),
+    products: el('products'),
+    searchInput: el('searchInput'),
+
+    cartDrawer: el('cartDrawer'),
+    cartOverlay: el('cartOverlay'),
+    btnOpenCart: el('btnOpenCart'),
+    btnCloseCart: el('btnCloseCart'),
+
+    cartCount: el('cartCount'),
+    cartItems: el('cartItems'),
+    subtotal: el('subtotal'),
+    fee: el('fee'),
+    total: el('total'),
+    minHint: el('minHint'),
+
+    custName: el('custName'),
+    custAddr: el('custAddr'),
+    custNote: el('custNote'),
+    deliveryFields: el('deliveryFields'),
+    modePickup: el('modePickup'),
+    modeDelivery: el('modeDelivery'),
+
+    btnCheckout: el('btnCheckout'),
+    btnClearCart: el('btnClearCart')
+  };
+
+  function loadCart() {
+    try { return JSON.parse(localStorage.getItem('boteco_cart') || '{}'); }
+    catch { return {}; }
+  }
+  function saveCart() {
+    localStorage.setItem('boteco_cart', JSON.stringify(state.cart));
+  }
+
+  function cartCount() {
+    return Object.values(state.cart).reduce((a, item) => a + item.qty, 0);
+  }
+  function cartSubtotal() {
+    let sum = 0;
+    for (const [id, entry] of Object.entries(state.cart)) {
+      const p = state.products.find(x => x.code === id);
+      if (p) sum += p.price * entry.qty;
+    }
+    return sum;
+  }
+
+  function isOpenNow() {
+    const c = state.config;
+    if (!c) return true;
+    if (c.forceClosed) return false;
+
+    const now = new Date();
+    const day = now.getDay();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+
+    const dayMap = {0:'sun',1:'mon',2:'tue',3:'wed',4:'thu',5:'fri',6:'sat'};
+    const key = dayMap[day];
+    const w = c.hours?.[key];
+    if (!w || !w.open || !w.close) return true;
+
+    const [oh, om] = w.open.split(':').map(Number);
+    const [ch, cm] = w.close.split(':').map(Number);
+    const o = oh * 60 + om;
+    const cl = ch * 60 + cm;
+
+    return minutes >= o && minutes <= cl;
+  }
+
+  function renderTop() {
+    const c = state.config;
+    document.title = c.storeName ? `${c.storeName} — Cardápio` : 'Cardápio';
+    dom.storeName.textContent = c.storeName || 'Seu Boteco';
+    dom.headline.textContent = c.headline || 'Peça rápido pelo WhatsApp';
+    dom.subheadline.textContent = c.subheadline || 'Escolha seus itens, revise o carrinho e finalize.';
+
+    const open = isOpenNow();
+    dom.storeStatus.textContent = open ? 'Aberto agora' : 'Fechado no momento';
+    dom.storeStatus.style.color = open ? 'rgba(34,197,94,.95)' : 'rgba(239,68,68,.95)';
+
+    dom.storeHoursPill.textContent = c.hoursText ? `Horário: ${c.hoursText}` : 'Horário: consulte';
+    dom.storeMinPill.textContent = `Pedido mínimo: ${money(c.minOrder || 0)}`;
+
+    dom.storeAddress.textContent = c.address ? `Endereço: ${c.address}` : '';
+    dom.storePhone.textContent = c.publicPhone ? `Contato: ${c.publicPhone}` : '';
+  }
+
+  function buildCategories() {
+    const cats = new Set(['Todos']);
+    for (const p of state.products) cats.add(p.category);
+    return Array.from(cats);
+  }
+
+  function renderChips() {
+    const cats = buildCategories();
+    dom.categoryChips.innerHTML = '';
+    cats.forEach(cat => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (cat === state.activeCategory ? ' chip--active' : '');
+      b.type = 'button';
+      b.textContent = cat;
+      b.onclick = () => {
+        state.activeCategory = cat;
+        renderChips();
+        renderProducts();
+      };
+      dom.categoryChips.appendChild(b);
+    });
+  }
+
+  function productMatches(p) {
+    if (state.activeCategory !== 'Todos' && p.category !== state.activeCategory) return false;
+    if (state.search) {
+      const s = state.search.toLowerCase();
+      const hay = `${p.name} ${p.description || ''} ${p.category}`.toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    return true;
+  }
+
+  function renderProducts() {
+    dom.products.innerHTML = '';
+    const list = state.products.filter(productMatches);
+
+    if (!list.length) {
+      const d = document.createElement('div');
+      d.className = 'card';
+      d.textContent = 'Nenhum item encontrado.';
+      dom.products.appendChild(d);
+      return;
+    }
+
+    list.forEach(p => {
+      const card = document.createElement('article');
+      card.className = 'product';
+
+      const img = document.createElement('div');
+      img.className = 'product__img';
+
+      const body = document.createElement('div');
+      body.className = 'product__body';
+
+      const t = document.createElement('h3');
+      t.className = 'product__title';
+      t.textContent = p.name;
+
+      const desc = document.createElement('p');
+      desc.className = 'product__desc';
+      desc.textContent = p.description || '';
+
+      const footer = document.createElement('div');
+      footer.className = 'product__footer';
+
+      const price = document.createElement('div');
+      price.className = 'price';
+      price.textContent = money(p.price);
+
+      const qty = document.createElement('div');
+      qty.className = 'qty';
+
+      const btnMinus = document.createElement('button');
+      btnMinus.className = 'qty__btn';
+      btnMinus.type = 'button';
+      btnMinus.textContent = '−';
+      btnMinus.onclick = () => addToCart(p.code, -1);
+
+      const count = document.createElement('div');
+      count.className = 'qty__count';
+      count.textContent = String(state.cart[p.code]?.qty || 0);
+
+      const btnPlus = document.createElement('button');
+      btnPlus.className = 'qty__btn';
+      btnPlus.type = 'button';
+      btnPlus.textContent = '+';
+      btnPlus.onclick = () => addToCart(p.code, +1);
+
+      qty.append(btnMinus, count, btnPlus);
+      footer.append(price, qty);
+
+      body.append(t, desc, footer);
+      card.append(img, body);
+      dom.products.appendChild(card);
+    });
+  }
+
+  function addToCart(id, delta) {
+    const cur = state.cart[id]?.qty || 0;
+    const next = cur + delta;
+    if (next <= 0) delete state.cart[id];
+    else state.cart[id] = { qty: next };
+
+    saveCart();
+    renderAll();
+  }
+
+  function openCart() {
+    dom.cartDrawer.classList.add('drawer--open');
+    dom.cartDrawer.setAttribute('aria-hidden', 'false');
+  }
+  function closeCart() {
+    dom.cartDrawer.classList.remove('drawer--open');
+    dom.cartDrawer.setAttribute('aria-hidden', 'true');
+  }
+
+  function renderCart() {
+    dom.cartCount.textContent = String(cartCount());
+
+    const items = [];
+    for (const [id, entry] of Object.entries(state.cart)) {
+      const p = state.products.find(x => x.code === id);
+      if (!p) continue;
+      items.push({ p, qty: entry.qty });
+    }
+
+    dom.cartItems.innerHTML = '';
+    if (!items.length) {
+      const d = document.createElement('div');
+      d.className = 'card';
+      d.textContent = 'Seu carrinho está vazio.';
+      dom.cartItems.appendChild(d);
+    } else {
+      items.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'cartItem';
+
+        const left = document.createElement('div');
+        const name = document.createElement('div');
+        name.className = 'cartItem__name';
+        name.textContent = it.p.name;
+
+        const meta = document.createElement('div');
+        meta.className = 'cartItem__meta';
+        meta.textContent = `${it.qty} × ${money(it.p.price)} • ${it.p.category}`;
+
+        left.append(name, meta);
+
+        const right = document.createElement('div');
+        right.className = 'cartItem__right';
+
+        const price = document.createElement('div');
+        price.className = 'cartItem__price';
+        price.textContent = money(it.p.price * it.qty);
+
+        const controls = document.createElement('div');
+        controls.className = 'qty';
+        controls.style.justifyContent = 'flex-end';
+
+        const bM = document.createElement('button');
+        bM.className = 'qty__btn';
+        bM.type = 'button';
+        bM.textContent = '−';
+        bM.onclick = () => addToCart(it.p.code, -1);
+
+        const c = document.createElement('div');
+        c.className = 'qty__count';
+        c.textContent = String(it.qty);
+
+        const bP = document.createElement('button');
+        bP.className = 'qty__btn';
+        bP.type = 'button';
+        bP.textContent = '+';
+        bP.onclick = () => addToCart(it.p.code, +1);
+
+        controls.append(bM, c, bP);
+        right.append(price, controls);
+
+        row.append(left, right);
+        dom.cartItems.appendChild(row);
+      });
+    }
+
+    const sub = cartSubtotal();
+    const fee = state.mode === 'delivery' ? (state.config.deliveryFee || 0) : 0;
+    const total = sub + fee;
+
+    dom.subtotal.textContent = money(sub);
+    dom.fee.textContent = money(fee);
+    dom.total.textContent = money(total);
+
+    const min = state.config.minOrder || 0;
+    if (sub > 0 && sub < min) {
+      dom.minHint.textContent = `Pedido mínimo: ${money(min)}. Faltam ${money(min - sub)}.`;
+    } else {
+      dom.minHint.textContent = '';
+    }
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    if (mode === 'delivery') {
+      dom.modeDelivery.classList.add('seg__btn--active');
+      dom.modePickup.classList.remove('seg__btn--active');
+      dom.deliveryFields.classList.remove('row--hidden');
+    } else {
+      dom.modePickup.classList.add('seg__btn--active');
+      dom.modeDelivery.classList.remove('seg__btn--active');
+      dom.deliveryFields.classList.add('row--hidden');
+    }
+    renderCart();
+  }
+
+  function whatsappLink(text) {
+    const phone = (state.config.whatsapp || '').replace(/\D/g, '');
+    const base = `https://wa.me/${phone}`;
+    const msg = encodeURIComponent(text);
+    return `${base}?text=${msg}`;
+  }
+
+  function buildOrderMessage() {
+    const c = state.config;
+    const name = (dom.custName.value || '').trim();
+    const addr = (dom.custAddr.value || '').trim();
+    const note = (dom.custNote.value || '').trim();
+
+    const items = [];
+    for (const [id, entry] of Object.entries(state.cart)) {
+      const p = state.products.find(x => x.code === id);
+      if (!p) continue;
+      items.push(`- ${entry.qty}x ${p.name} (${money(p.price)})`);
+    }
+
+    const sub = cartSubtotal();
+    const fee = state.mode === 'delivery' ? (c.deliveryFee || 0) : 0;
+    const total = sub + fee;
+
+    const lines = [];
+    lines.push(`Olá! Quero fazer um pedido no ${c.storeName}.`);
+    lines.push('');
+    if (name) lines.push(`Nome: ${name}`);
+    lines.push(`Forma: ${state.mode === 'delivery' ? 'Entrega' : 'Retirar no local'}`);
+    if (state.mode === 'delivery') lines.push(`Endereço: ${addr || '(não informado)'}`);
+    lines.push('');
+    lines.push('Itens:');
+    lines.push(...items);
+    lines.push('');
+    lines.push(`Subtotal: ${money(sub)}`);
+    if (fee > 0) lines.push(`Taxa de entrega: ${money(fee)}`);
+    lines.push(`Total: ${money(total)}`);
+    if (note) {
+      lines.push('');
+      lines.push(`Observação: ${note}`);
+    }
+    return lines.join('\n');
+  }
+
+  function canCheckout() {
+    const sub = cartSubtotal();
+    if (sub <= 0) return { ok: false, reason: 'Carrinho vazio.' };
+    if ((state.config.minOrder || 0) > 0 && sub < state.config.minOrder) return { ok: false, reason: 'Abaixo do pedido mínimo.' };
+    if (state.mode === 'delivery') {
+      const addr = (dom.custAddr.value || '').trim();
+      if (!addr) return { ok: false, reason: 'Informe o endereço para entrega.' };
+    }
+    if (!(state.config.whatsapp || '').replace(/\D/g, '')) return { ok: false, reason: 'WhatsApp do estabelecimento não configurado.' };
+    return { ok: true };
+  }
+
+  function renderAll() {
+    renderTop();
+    renderChips();
+    renderProducts();
+    renderCart();
+  }
+
+  function bind() {
+    dom.btnOpenCart.onclick = openCart;
+    dom.btnCloseCart.onclick = closeCart;
+    dom.cartOverlay.onclick = closeCart;
+
+    dom.searchInput.addEventListener('input', (e) => {
+      state.search = e.target.value || '';
+      renderProducts();
+    });
+
+    dom.modePickup.onclick = () => setMode('pickup');
+    dom.modeDelivery.onclick = () => setMode('delivery');
+
+    dom.btnClearCart.onclick = () => {
+      state.cart = {};
+      saveCart();
+      renderAll();
+    };
+
+    dom.btnCheckout.onclick = () => {
+      const v = canCheckout();
+      if (!v.ok) {
+        alert(v.reason);
+        return;
+      }
+      const msg = buildOrderMessage();
+      window.open(whatsappLink(msg), '_blank', 'noopener');
+    };
+  }
+
+  bind();
+  setMode('pickup');
+  renderAll();
+})();
+
+</script>
+</body>
+</html>

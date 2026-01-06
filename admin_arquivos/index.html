@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boteco do Belém</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#FFD700">
+  <link rel="icon" href="/assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  <!-- /PWA -->
+
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      <div class="brand">
+        <img src="./assets/img/logo.png" alt="Boteco do Belém" class="brandLogo" />
+        <div class="brandText">
+          <div class="brandName" id="brandNameTop">Boteco do Belém</div>
+          <div class="brandBadge">Cardápio</div>
+        </div>
+      </div>
+
+      <button class="navToggle" id="navToggle" type="button">Menu</button>
+
+      <ul class="navLinks" id="navLinks">
+        <li><a href="#cardapio">Cardápio</a></li>
+        <li><a href="#pedido">Pedir</a></li>
+        <li><a href="./comanda.html">Comanda Garçom</a></li>
+        <li><a href="./imprimir_whatsapp.html">Imprimir WhatsApp</a></li>
+        <li><a href="./admin.html">Admin</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="heroGrid">
+        <div class="heroCard">
+          <h1 class="heroTitle" id="brandTitle">Boteco do Belém</h1>
+          <p class="heroSub" id="brandTagline">Hamburgueria Artesanal de Verdade</p>
+
+          <div class="btnRow">
+            <a class="btn primary" href="#cardapio">Ver cardápio</a>
+            <a class="btn ghost" href="#" data-whatsapp id="waHero">Pedir no WhatsApp</a>
+            <a class="btn ghost" href="./comanda.html">Comanda de Garçom</a>
+          </div>
+
+          <div class="note" id="dataHint" style="display:none"></div>
+        </div>
+
+        <div class="panel">
+          <div class="h2">Informações</div>
+
+          <div class="pill">Endereço: <span id="brandAddress">Rua Rio Grande do Sul, 198 - Bela Vista...</span></div>
+          <div style="height:10px"></div>
+          <div class="pill">Horário: <span id="brandHours">Seg a Dom • 18h às 23h</span></div>
+          <div style="height:10px"></div>
+          <div class="pill">Instagram: <a id="instaLink" href="#" target="_blank" rel="noopener">Abrir</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cardapio" class="section">
+      <div class="sectionHeader">
+        <div class="h2">Cardápio</div>
+        <div class="tools">
+          <input id="search" class="input" placeholder="Buscar por nome/código..." />
+          <select id="catFilter" class="input">
+            <option value="">Todas as categorias</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="menuRoot" class="menuRoot"></div>
+
+      <div class="emptyState" id="emptyState" style="display:none">
+        Nenhum produto encontrado.
+      </div>
+    </section>
+
+    <section id="pedido" class="section" style="margin-top:18px">
+      <div class="panel">
+        <div class="h2">Finalizar pedido</div>
+        <div class="muted">
+          Abra o carrinho e envie direto para o WhatsApp.
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="grid2">
+          <div class="panelMini">
+            <div class="small">WhatsApp</div>
+            <div class="mono" id="waNumberPreview">5549998358251</div>
+          </div>
+          <div class="panelMini">
+            <div class="small">Delivery</div>
+            <div class="mono" id="deliveryPreview">Ativo • taxa padrão</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <div class="panel">
+        <div class="h2">Instagram</div>
+        <a class="btn ghost" id="instaLink2" href="#" target="_blank" rel="noopener">Abrir Instagram</a>
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <div class="panel">
+        <div class="h2">Contato</div>
+        <div class="pill">Endereço: <span id="brandAddress2">Endereço</span></div>
+        <div style="height:10px"></div>
+        <div class="pill">Horário: <span id="brandHours2">Horário</span></div>
+      </div>
+    </section>
+  </main>
+
+  <button id="cartFab" class="cartFab" type="button">
+    Carrinho <span class="badge" id="cartCount">0</span>
+  </button>
+
+  <div id="drawerOverlay" class="drawerOverlay" aria-hidden="true"></div>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawerHeader">
+      <div style="font-weight:900">Seu carrinho</div>
+      <div style="display:flex;gap:8px">
+        <button id="clearCart" class="iconBtn" type="button">Limpar</button>
+        <button id="closeCart" class="iconBtn" type="button">Fechar</button>
+      </div>
+    </div>
+
+    <div class="drawerBody">
+      <div id="cartBody"></div>
+
+      <hr>
+
+      <div class="h2" style="font-size:18px">Dados do pedido</div>
+
+      <div class="small">Tipo</div>
+      <select id="cType" class="input">
+        <option value="Delivery">Delivery</option>
+        <option value="Retirada">Retirada/Balcão</option>
+      </select>
+
+      <div style="height:10px"></div>
+      <div class="small">Nome</div>
+      <input id="cName" class="input" placeholder="Seu nome" />
+
+      <div style="height:10px"></div>
+      <div class="small">Telefone (opcional)</div>
+      <input id="cPhone" class="input" placeholder="(49) 9xxxx-xxxx" />
+
+      <div style="height:10px"></div>
+      <div class="small">Endereço (para delivery)</div>
+      <input id="cAddress" class="input" placeholder="Rua, número, complemento" />
+
+      <div style="height:10px"></div>
+      <div class="small">Bairro (opcional)</div>
+      <input id="cBairro" class="input" placeholder="Bairro" />
+
+      <div style="height:10px"></div>
+      <div class="small">Referência (opcional)</div>
+      <input id="cRef" class="input" placeholder="Perto de..." />
+
+      <div style="height:10px"></div>
+      <div class="small">Pagamento</div>
+      <select id="cPay" class="input">
+        <option value="Dinheiro">Dinheiro</option>
+        <option value="Pix">Pix</option>
+        <option value="Cartão">Cartão</option>
+      </select>
+
+      <div style="height:10px"></div>
+      <div class="small">Observações (opcional)</div>
+      <textarea id="cObs" class="input" rows="3" placeholder="Sem cebola, ponto da carne etc."></textarea>
+    </div>
+
+    <div class="totalBox">
+      <div class="totalRow">
+        <span>Subtotal produtos</span>
+        <span id="itemsTotal">R$ 0,00</span>
+      </div>
+      <div class="totalRow">
+        <span>Taxa entrega</span>
+        <span id="deliveryFee">R$ 0,00</span>
+      </div>
+      <div class="totalRow big">
+        <span>Total</span>
+        <span id="grandTotal">R$ 0,00</span>
+      </div>
+
+      <div style="height:10px"></div>
+      <button id="checkoutBtn" class="btn primary" style="width:100%" type="button">
+        Enviar pedido no WhatsApp
+      </button>
+      <div class="tiny" style="margin-top:8px">
+        Dica: se nada aparecer no cardápio, importe o backup no Admin ou edite assets/data/products.default.json.
+      </div>
+    </div>
+  </aside>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="small">© 2025 Boteco do Belém</div>
+    </div>
+  </footer>
+
+  <!-- Som de novo pedido -->
+  <audio id="orderSound" src="./assets/sounds/novo-pedido.mp3" preload="auto"></audio>
+
+  <!-- Senha opcional para clientes (controlada pelo Admin) -->
+  <script>
+  (function(){
+    const LS_CONFIG_KEY = 'boteco_config_v1';
+    const LS_APP_LOGADO = 'boteco_app_logado';
+
+    function getConfig(){
+      try{
+        const raw = localStorage.getItem(LS_CONFIG_KEY);
+        if(!raw) return null;
+        return JSON.parse(raw);
+      }catch(e){ return null; }
+    }
+
+    function verificarSenhaApp(){
+      const cfg = getConfig();
+      if(!cfg || !cfg.senhaAppAtiva) return;
+
+      const logado = localStorage.getItem(LS_APP_LOGADO);
+      if(logado === '1') return;
+
+      const senha = prompt('Digite a senha para acessar o cardápio:');
+      if(senha && senha.trim() === cfg.senhaAppValor){
+        localStorage.setItem(LS_APP_LOGADO, '1');
+      }else{
+        alert('Senha incorreta. Recarregue a página para tentar novamente.');
+        document.body.innerHTML = '<div style="padding:20px;text-align:center;color:#fff">Acesso negado. Recarregue a página.</div>';
+      }
+    }
+
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', verificarSenhaApp);
+    }else{
+      verificarSenhaApp();
+    }
+  })();
+  </script>
+
+  <!-- PWA -->
+  <script src="/pwa.js"></script>
+  <!-- /PWA -->
+
+  <script src="./assets/app.js"></script>
+</body>
+</html>

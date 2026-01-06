@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Boteco do Belém</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<header class="header">
+  <div class="logoWrap">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div class="headerTitle">Admin - Boteco do Belém</div>
+  </div>
+  <nav class="headerNav">
+    <a href="./index.html">Ver site</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" onclick="mudarAba('config')">Configurações Gerais</div>
+    <div class="tab" onclick="mudarAba('produtos')">Produtos (Cardápio)</div>
+    <div class="tab" onclick="mudarAba('backup')">Backup & Restauração</div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="abaConfig" class="tabContent active">
+    <div class="panel">
+      <div class="h1">Configurações Gerais</div>
+      <div class="small">Delivery, taxa de entrega, WhatsApp, senha do app (opcional).</div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Delivery</div>
+      <div class="row">
+        <div>
+          <span class="label">Ativar Delivery?</span>
+          <label style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="cfgDeliveryAtivo" />
+            <span>Sim, permitir pedidos Delivery</span>
+          </label>
+        </div>
+        <div>
+          <span class="label">Taxa padrão (R$):</span>
+          <input type="number" id="cfgTaxaEntrega" step="0.01" min="0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">WhatsApp</div>
+      <div class="row">
+        <div>
+          <span class="label">Número (somente dígitos, com DDI e DDD)</span>
+          <input type="text" id="cfgWhats" placeholder="Ex: 5549999999999" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Senha para clientes (opcional)</div>
+      <div class="row">
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <input type="checkbox" id="cfgSenhaApp" />
+            <span>Exigir senha para abrir o cardápio?</span>
+          </label>
+          <span class="label">Senha do app:</span>
+          <input type="text" id="cfgSenhaAppValor" placeholder="Ex: PEDIDO2025" />
+        </div>
+      </div>
+      <div class="small" style="margin-top:6px">
+        Se ativado, o cliente precisará digitar essa senha antes de ver o cardápio (você pode implementar depois na index).
+      </div>
+    </div>
+
+    <div class="btnRow">
+      <button class="btn primary" type="button" onclick="salvarConfiguracoesAdmin()">Salvar Configurações</button>
+    </div>
+  </div>
+
+  <!-- PRODUTOS -->
+  <div id="abaProdutos" class="tabContent">
+    <div class="panel">
+      <div class="h1">Produtos do Cardápio</div>
+      <div class="small">Ative/desative produtos de acordo com o dia.</div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <span class="label">Filtrar por categoria</span>
+          <select id="fCategoriaProd"></select>
+        </div>
+        <div>
+          <span class="label">Buscar por nome/código</span>
+          <input id="fBuscaProd" placeholder="Ex.: SMASH, 2, COCA..." />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">
+        Produtos
+        <span class="badge" id="badgeCountProd">0 produtos</span>
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:80px">Código</th>
+              <th>Nome</th>
+              <th style="width:150px">Categoria</th>
+              <th>Descrição</th>
+              <th class="money" style="width:90px">Preço</th>
+              <th style="width:90px">Ativo?</th>
+            </tr>
+          </thead>
+          <tbody id="prodBody"></tbody>
+        </table>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="salvarAlteracoesProdutos()">Salvar alterações</button>
+        <button class="btn ghost" type="button" onclick="ativarTodos()">Ativar todos</button>
+        <button class="btn ghost" type="button" onclick="desativarTodos()">Desativar todos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKUP & RESTAURAÇÃO -->
+  <div id="abaBackup" class="tabContent">
+    <div class="panel">
+      <div class="h1">Backup & Restauração</div>
+      <div class="small">
+        Exporte um JSON com configurações e produtos, importe novamente quando quiser,
+        ou limpe TUDO (cuidado, é irreversível).
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Exportar JSON (backup)</div>
+      <div class="small" style="margin-bottom:8px">
+        Gera um arquivo com configurações e todos os produtos (incluindo ativos/inativos).
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="exportarBackup()">Exportar JSON</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Importar JSON (restaurar)</div>
+      <div class="small" style="margin-bottom:8px">
+        Atenção: isso vai substituir os dados atuais pelos dados do arquivo.
+      </div>
+      <div class="row">
+        <div>
+          <input type="file" id="fileBackup" accept=".json,application/json" />
+        </div>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="importarBackup()">Importar JSON</button>
+      </div>
+    </div>
+
+    <div class="panel" style="border:2px solid #ff4444">
+      <div class="h2" style="color:#ff4444">Limpar TUDO (cuidado!)</div>
+      <div class="small" style="margin-bottom:8px">
+        Apaga configurações, produtos e pedidos salvos neste navegador. Volta tudo para o padrão.
+      </div>
+      <div class="btnRow">
+        <button class="btn danger" type="button" onclick="limparTudo()">LIMPAR TUDO</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./assets/js/app.js"></script>
+<script>
+let PRODUTOS_FILTRADOS = [];
+
+function mudarAba(nome){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tabContent').forEach(tc=>tc.classList.remove('active'));
+
+  if(nome === 'config'){
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('abaConfig').classList.add('active');
+  }else if(nome === 'produtos'){
+    document.querySelectorAll('.tab')[1].classList.add('active');
+    document.getElementById('abaProdutos').classList.add('active');
+  }else if(nome === 'backup'){
+    document.querySelectorAll('.tab')[2].classList.add('active');
+    document.getElementById('abaBackup').classList.add('active');
+  }
+}
+
+// CONFIG
+function preencherCamposConfigAdmin(){
+  const cfg = carregarConfiguracoes();
+  document.getElementById('cfgDeliveryAtivo').checked = !!cfg.deliveryAtivo;
+  document.getElementById('cfgTaxaEntrega').value = Number(cfg.taxaEntrega||0).toFixed(2);
+  document.getElementById('cfgWhats').value = cfg.whatsapp || '';
+  document.getElementById('cfgSenhaApp').checked = !!cfg.senhaAppAtiva;
+  document.getElementById('cfgSenhaAppValor').value = cfg.senhaAppValor || '';
+}
+function salvarConfiguracoesAdmin(){
+  const cfg = {
+    deliveryAtivo: document.getElementById('cfgDeliveryAtivo').checked,
+    taxaEntrega: parseFloat(document.getElementById('cfgTaxaEntrega').value || 0),
+    whatsapp: (document.getElementById('cfgWhats').value || '').trim(),
+    senhaAppAtiva: document.getElementById('cfgSenhaApp').checked,
+    senhaAppValor: (document.getElementById('cfgSenhaAppValor').value || '').trim()
+  };
+  salvarConfiguracoesObj(cfg);
+  alert('Configurações salvas.');
+}
+
+// PRODUTOS
+function preencherFiltroCategoriasProd(){
+  const sel = document.getElementById('fCategoriaProd');
+  const cats = Array.from(new Set((PRODUTOS||[]).map(p=>String(p.category||'').trim()).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">Todas</option>';
+  cats.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function aplicarFiltrosProd(){
+  const cat   = (document.getElementById('fCategoriaProd').value || '').trim().toLowerCase();
+  const busca = (document.getElementById('fBuscaProd').value || '').trim().toLowerCase();
+  let list = (PRODUTOS || []).slice();
+
+  if(cat){
+    list = list.filter(p => String(p.category||'').toLowerCase() === cat);
+  }
+  if(busca){
+    list = list.filter(p=>{
+      const code = String(p.code||'').toLowerCase();
+      const name = String(p.name||'').toLowerCase();
+      const desc = String(p.description||'').toLowerCase();
+      return code.includes(busca) || name.includes(busca) || desc.includes(busca);
+    });
+  }
+  PRODUTOS_FILTRADOS = list;
+  renderTabelaProd();
+}
+
+function renderTabelaProd(){
+  const tbody = document.getElementById('prodBody');
+  tbody.innerHTML = '';
+  PRODUTOS_FILTRADOS.forEach((p,idx)=>{
+    const ativoHoje = (p.active === false) ? false : true;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.code || ''}</td>
+      <td><input value="${p.name || ''}" data-field="name" data-code="${p.code}" /></td>
+      <td><input value="${p.category || ''}" data-field="category" data-code="${p.code}" /></td>
+      <td><textarea data-field="description" data-code="${p.code}">${p.description || ''}</textarea></td>
+      <td class="money"><input value="${Number(p.price||0).toFixed(2).replace('.',',')}" data-field="price" data-code="${p.code}" /></td>
+      <td style="text-align:center">
+        <input type="checkbox" data-field="active" data-code="${p.code}" ${ativoHoje ? 'checked' : ''} />
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('badgeCountProd').textContent = PRODUTOS_FILTRADOS.length + ' produtos';
+
+  // Eventos
+  tbody.querySelectorAll('input[data-field],textarea[data-field]').forEach(el=>{
+    el.addEventListener('change', function(){
+      const field = this.getAttribute('data-field');
+      const code  = this.getAttribute('data-code');
+      const prod = PRODUTOS.find(p => String(p.code)===String(code));
+      if(!prod) return;
+      if(field === 'price'){
+        prod.price = parseFloat(String(this.value||'0').replace(',','.')) || 0;
+      }else if(field === 'active'){
+        prod.active = !!this.checked;
+      }else{
+        prod[field] = this.value;
+      }
+    });
+  });
+  tbody.querySelectorAll('input[type="checkbox"][data-field="active"]').forEach(chk=>{
+    chk.addEventListener('change', function(){
+      const code = this.getAttribute('data-code');
+      const prod = PRODUTOS.find(p => String(p.code)===String(code));
+      if(prod) prod.active = !!this.checked;
+    });
+  });
+}
+
+function salvarAlteracoesProdutos(){
+  try{
+    localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(PRODUTOS));
+    alert('Alterações salvas. O cardápio já vai respeitar os produtos ativos.');
+  }catch(e){
+    alert('Erro ao salvar no navegador.');
+  }
+}
+function ativarTodos(){
+  PRODUTOS.forEach(p=>{p.active = true;});
+  aplicarFiltrosProd();
+}
+function desativarTodos(){
+  PRODUTOS.forEach(p=>{p.active = false;});
+  aplicarFiltrosProd();
+}
+
+// BACKUP
+function exportarBackup(){
+  try{
+    const backup = {
+      versao: '1.0',
+      dataExportacao: new Date().toISOString(),
+      configuracoes: carregarConfiguracoes(),
+      produtos: PRODUTOS
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    a.href = url;
+    a.download = 'backup_boteco_belem_' + ts + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('Backup exportado com sucesso.');
+  }catch(e){
+    alert('Erro ao exportar: ' + e.message);
+  }
+}
+
+function importarBackup(){
+  const inp = document.getElementById('fileBackup');
+  const file = inp && inp.files ? inp.files[0] : null;
+  if(!file){
+    alert('Selecione um arquivo JSON.');
+    return;
+  }
+  if(!confirm('ATENÇÃO!\n\nIsso vai substituir os dados atuais pelos do backup.\n\nDeseja continuar?')) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const backup = JSON.parse(String(ev.target.result||''));
+      if(!backup || !backup.produtos || !backup.configuracoes){
+        alert('Arquivo de backup inválido.');
+        return;
+      }
+      salvarConfiguracoesObj(backup.configuracoes);
+      PRODUTOS = Array.isArray(backup.produtos) ? backup.produtos : [];
+      localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(PRODUTOS));
+      alert('Backup restaurado. A página será recarregada.');
+      location.reload();
+    }catch(e){
+      alert('Erro ao importar: ' + e.message);
+    }
+  };
+  reader.onerror = function(){
+    alert('Erro ao ler arquivo.');
+  };
+  reader.readAsText(file);
+}
+
+function limparTudo(){
+  if(!confirm('CUIDADO!\nIsso vai APAGAR configurações, produtos e pedidos neste navegador.\nContinuar?')) return;
+  if(!confirm('Confirma apagar tudo MESMO?')) return;
+  try{
+    localStorage.removeItem(LS_CONFIG_KEY);
+    localStorage.removeItem(LS_PRODUCTS_KEY);
+    localStorage.removeItem(LS_PEDIDOS_KEY);
+    alert('Tudo apagado. Página será recarregada.');
+    location.reload();
+  }catch(e){
+    alert('Erro ao limpar: ' + e.message);
+  }
+}
+
+async function iniciarAdmin(){
+  await carregarProdutosBase();
+  preencherCamposConfigAdmin();
+  preencherFiltroCategoriasProd();
+  aplicarFiltrosProd();
+}
+
+document.addEventListener('DOMContentLoaded', iniciarAdmin);
+</script>
+</body>
+</html>

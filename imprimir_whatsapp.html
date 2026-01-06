@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Imprimir Pedido do WhatsApp - Boteco do Belém</title>
+<style>
+body{margin:0;font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;background:#121212;color:#fff}
+header{background:linear-gradient(135deg,#8B4513 0%, #D2691E 100%);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header img{height:40px}
+a{color:#FFD700;text-decoration:none;font-weight:700}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+.panel{background:#1e1e1e;border-radius:14px;border:1px solid rgba(255,255,255,.12);padding:14px;margin-bottom:14px}
+.h1{font-size:18px;font-weight:900;margin:0 0 10px}
+.label{font-size:11px;color:#b6b6b6;margin-bottom:4px;font-weight:800}
+textarea,input{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.18);padding:10px;background:#111;color:#fff;font-size:13px}
+textarea{min-height:240px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.btn{border-radius:999px;border:0;padding:10px 14px;font-weight:900;cursor:pointer;font-size:13px}
+.btn.primary{background:#FFD700;color:#121212}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff}
+.btn.danger{background:#d32f2f;color:#fff}
+.small{font-size:11px;color:#b6b6b6;margin-top:8px;line-height:1.4}
+.kv{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.kv span{background:#151515;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 10px;font-size:12px}
+.kv b{color:#FFD700}
+.preview{background:#fff;color:#000;border-radius:12px;border:1px solid #ddd;padding:12px;margin-top:10px;font-family:"Courier New",monospace;font-size:12px}
+.preview pre{margin:0;white-space:pre-wrap}
+hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:10px 0}
+.checkbox{display:flex;align-items:center;gap:8px;margin-top:10px}
+.checkbox input{width:auto}
+@media print{.no-print{display:none} body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div style="font-weight:900;font-size:14px">Imprimir Pedido do WhatsApp</div>
+  </div>
+  <a href="./index.html">Voltar ao site</a>
+</header>
+
+<div class="wrap">
+  <div class="panel no-print">
+    <div class="h1">Cole o pedido do WhatsApp Web e imprima em 80mm/58mm</div>
+
+    <div class="label">Texto do pedido (copiar do WhatsApp e colar aqui)</div>
+    <textarea id="texto" placeholder="Cole aqui a mensagem do cliente..."></textarea>
+
+    <div class="checkbox">
+      <input type="checkbox" id="salvarHistorico" checked />
+      <label for="salvarHistorico" class="small" style="margin:0">
+        Salvar no histórico do sistema (para Reimpressão e Caixa)
+      </label>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost" type="button" onclick="formatar()">Formatar / Pré-visualizar</button>
+      <button class="btn danger" type="button" onclick="limpar()">Limpar</button>
+      <div style="flex:1 1 auto"></div>
+      <button class="btn primary" type="button" onclick="imprimir('80')">Imprimir 80mm</button>
+      <button class="btn primary" type="button" onclick="imprimir('58')">Imprimir 58mm</button>
+    </div>
+
+    <div class="small">
+      Como usar:
+      1) No WhatsApp Web, copie o pedido (Ctrl+C).
+      2) Cole aqui (Ctrl+V).
+      3) Clique “Formatar / Pré-visualizar” (opcional).
+      4) Clique “Imprimir 80mm” ou “Imprimir 58mm”.
+    </div>
+  </div>
+
+  <div class="panel no-print" id="parsedPanel" style="display:none">
+    <div class="h1" style="margin-bottom:6px">Detectado do texto</div>
+    <div class="kv" id="kv"></div>
+    <hr />
+    <div class="label">Pré-visualização do cupom</div>
+    <div class="preview"><pre id="preview"></pre></div>
+  </div>
+</div>
+
+<script>
+const BRAND = 'BOTECO DO BELEM';
+const LS_VENDAS_KEY = 'boteco_vendas_historico';
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function formatDataHora(d){
+  return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes());
+}
+
+function limpar(){
+  document.getElementById('texto').value = '';
+  document.getElementById('parsedPanel').style.display = 'none';
+  document.getElementById('texto').focus();
+}
+
+function toNumberBR(v){
+  // aceita "R$ 122,00" ou "122,00"
+  const s = String(v||'')
+    .replace(/R\$\s?/gi,'')
+    .replace(/\./g,'')
+    .replace(',', '.')
+    .trim();
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function moneyBR(n){
+  return 'R$ ' + Number(n||0).toFixed(2).replace('.',',');
+}
+
+function normalizeText(raw){
+  return String(raw||'')
+    .replace(/\u00A0/g,' ')
+    .replace(/\r\n/g,'\n')
+    .replace(/\r/g,'\n');
+}
+
+function parsePedido(raw){
+  const text = normalizeText(raw);
+  const lines = text.split('\n').map(l => String(l||'').trim()).filter(l => l.length>0);
+
+  const out = {
+    titulo: '',
+    atendente: '',
+    nome: '',
+    tipo: '',
+    telefone: '',
+    pagamento: '',
+    endereco: '',
+    bairro: '',
+    referencia: '',
+    itens: [],
+    subtotal: 0,
+    taxaEntrega: 0,
+    total: 0
+  };
+
+  function readField(prefix){
+    const re = new RegExp('^' + prefix.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*:\\s*(.+)$', 'i');
+    for(const l of lines){
+      const m = l.match(re);
+      if(m && m[1]) return m[1].trim();
+    }
+    return '';
+  }
+
+  // Cabeçalho
+  out.titulo = lines[0] && lines[0].toUpperCase().includes('NOVO PEDIDO') ? 'NOVO PEDIDO' : '';
+  out.atendente = readField('Atendente');
+  out.nome = readField('Nome');
+  out.tipo = readField('Tipo');
+  out.telefone = readField('Telefone');
+  out.pagamento = readField('Pagamento');
+  out.endereco = readField('Endereço') || readField('Endereco');
+  out.bairro = readField('Bairro');
+  out.referencia = readField('Referência') || readField('Referencia');
+
+  // Totais
+  const sub = readField('Subtotal');
+  if(sub) out.subtotal = toNumberBR(sub);
+
+  const taxa = readField('Taxa entrega') || readField('Taxa de entrega');
+  if(taxa) out.taxaEntrega = toNumberBR(taxa);
+
+  // TOTAL pode vir como "TOTAL: R$ 122,00"
+  const totalLine = readField('TOTAL');
+  if(totalLine) out.total = toNumberBR(totalLine);
+
+  // Itens: localizar índice do "ITENS:"
+  let idxItens = -1;
+  for(let i=0;i<lines.length;i++){
+    if(lines[i].toUpperCase() === 'ITENS:' || lines[i].toUpperCase() === 'ITENS'){
+      idxItens = i;
+      break;
+    }
+  }
+
+  // Padrões de item (no formato do seu exemplo)
+  // 1) "2x SMASH BACON DUPLO (cód: 4)"
+  const reItem = /^(\d+)\s*x\s*(.+?)(?:\s*\(c[óo]d\s*:\s*([^)]+)\))?$/i;
+  // 2) "R$ 34,00 cada = R$ 68,00"
+  const rePreco = /^R\$\s*([\d\.\,]+)\s*cada\s*=\s*R\$\s*([\d\.\,]+)$/i;
+  // 3) "Obs: ..."
+  const reObs = /^_?\s*obs\s*:\s*(.+?)\s*_?$/i;
+
+  if(idxItens >= 0){
+    for(let i=idxItens+1;i<lines.length;i++){
+      const l = lines[i];
+
+      // Para ao chegar nos totais
+      const up = l.toUpperCase();
+      if(up.startsWith('SUBTOTAL:') || up.startsWith('TAXA') || up.startsWith('TOTAL:')) break;
+
+      const m = l.match(reItem);
+      if(m){
+        const qtd = parseInt(m[1],10) || 0;
+        const name = String(m[2]||'').trim();
+        const code = (m[3] != null) ? String(m[3]).trim() : '';
+        let unit = 0;
+        let tot = 0;
+        let obs = '';
+
+        // próxima linha pode ser preço
+        if(i+1 < lines.length){
+          const m2 = lines[i+1].match(rePreco);
+          if(m2){
+            unit = toNumberBR(m2[1]);
+            tot = toNumberBR(m2[2]);
+            i++;
+          }
+        }
+
+        // próxima linha pode ser obs
+        if(i+1 < lines.length){
+          const m3 = lines[i+1].match(reObs);
+          if(m3){
+            obs = String(m3[1]||'').trim();
+            i++;
+          }
+        }
+
+        out.itens.push({
+          qtd: qtd,
+          name: name,
+          code: code,
+          price: unit,
+          total: tot || (unit*qtd),
+          obs: obs
+        });
+      }
+    }
+  }
+
+  // Se não veio total, tenta calcular
+  if(!out.total){
+    if(out.subtotal || out.taxaEntrega){
+      out.total = Number(out.subtotal||0) + Number(out.taxaEntrega||0);
+    }else{
+      out.total = out.itens.reduce((s,i)=>s+Number(i.total||0),0);
+    }
+  }
+
+  return out;
+}
+
+function buildCupom(parsed, largura){
+  const w = (largura === '58') ? 32 : 42;
+  const now = new Date();
+
+  function center(t){
+    t = String(t||'');
+    if(t.length >= w) return t.substring(0,w);
+    const esp = Math.floor((w - t.length)/2);
+    return ' '.repeat(esp) + t;
+  }
+
+  function wrap(prefix, text){
+    const out = [];
+    const p = String(prefix||'');
+    let t = String(text||'').trim();
+    if(!t) return out;
+
+    const availFirst = Math.max(1, w - p.length);
+    let first = t;
+    if(first.length > availFirst) first = first.substring(0, availFirst);
+    out.push(p + first);
+    t = t.substring(first.length).trim();
+
+    while(t.length > 0){
+      let part = t;
+      if(part.length > w) part = part.substring(0, w);
+      out.push(part);
+      t = t.substring(part.length).trim();
+    }
+    return out;
+  }
+
+  function lineKV(k, v){
+    if(!v) return [];
+    const txt = `${k}: ${v}`;
+    return wrap('', txt);
+  }
+
+  // Linha compacta de item
+  // 80mm: "2x (4) SMASH BACON DUPLO"
+  // 58mm: idem, mas quebra mais
+  function itemHeader(i){
+    const code = i.code ? `(${i.code}) ` : '';
+    return `${i.qtd}x ${code}${String(i.name||'')}`.trim();
+  }
+
+  const linhas = [];
+  linhas.push(center(BRAND));
+  linhas.push(center(parsed.titulo ? parsed.titulo : 'PEDIDO WHATSAPP'));
+  linhas.push('-'.repeat(w));
+  linhas.push('Data/Hora: ' + formatDataHora(now));
+  if(parsed.atendente) linhas.push('Atendente: ' + String(parsed.atendente).toUpperCase());
+  linhas.push('-'.repeat(w));
+
+  lineKV('Nome', parsed.nome).forEach(x=>linhas.push(x));
+  lineKV('Tipo', parsed.tipo).forEach(x=>linhas.push(x));
+  lineKV('Telefone', parsed.telefone).forEach(x=>linhas.push(x));
+  lineKV('Pagamento', parsed.pagamento).forEach(x=>linhas.push(x));
+  lineKV('Endereco', parsed.endereco).forEach(x=>linhas.push(x));
+  lineKV('Bairro', parsed.bairro).forEach(x=>linhas.push(x));
+  lineKV('Referencia', parsed.referencia).forEach(x=>linhas.push(x));
+
+  if(parsed.nome || parsed.tipo || parsed.telefone || parsed.pagamento || parsed.endereco || parsed.bairro || parsed.referencia){
+    linhas.push('-'.repeat(w));
+  }
+
+  linhas.push('ITENS:');
+  linhas.push('-'.repeat(w));
+
+  (parsed.itens||[]).forEach(i=>{
+    wrap('', itemHeader(i).toUpperCase()).forEach(x=>linhas.push(x));
+
+    // Linha de preço (mais curta)
+    const unit = Number(i.price||0);
+    const tot = Number(i.total||0);
+    const priceLine = `${moneyBR(unit)} un = ${moneyBR(tot)}`;
+    wrap('  ', priceLine).forEach(x=>linhas.push(x));
+
+    if(i.obs){
+      linhas.push('  OBS:');
+      wrap('   ', String(i.obs).replace(/^_+|_+$/g,'').trim().toUpperCase()).forEach(x=>linhas.push(x));
+    }
+    linhas.push('');
+  });
+
+  linhas.push('-'.repeat(w));
+  if(parsed.subtotal) linhas.push('Subtotal: ' + moneyBR(parsed.subtotal));
+  // taxa pode ser 0 e ainda assim é útil imprimir
+  linhas.push('Taxa entrega: ' + moneyBR(parsed.taxaEntrega || 0));
+  linhas.push('TOTAL: ' + moneyBR(parsed.total || 0));
+  linhas.push('-'.repeat(w));
+  linhas.push(center('*** PRODUCAO ***'));
+  linhas.push('');
+  return linhas.join('\n');
+}
+
+function loadList(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return [];
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveList(key, arr){
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+function salvarNoHistorico(parsed){
+  // salva num formato compatível com o seu histórico de vendas
+  const itens = (parsed.itens||[]).map(i=>({
+    code: i.code || '',
+    name: i.name || '',
+    qtd: Number(i.qtd||0),
+    price: Number(i.price||0),
+    obs: i.obs || ''
+  }));
+
+  const venda = {
+    timestamp: new Date().toISOString(),
+    tipo: parsed.tipo || 'WhatsApp',
+    cliente: parsed.nome || '',
+    telefone: parsed.telefone || '',
+    pagamento: parsed.pagamento || '',
+    endereco: parsed.endereco || '',
+    bairro: parsed.bairro || '',
+    referencia: parsed.referencia || '',
+    atendente: parsed.atendente || '',
+    itens: itens,
+    subtotal: Number(parsed.subtotal||0),
+    taxaEntrega: Number(parsed.taxaEntrega||0),
+    total: Number(parsed.total||0),
+    origem: 'whatsapp_web_colar'
+  };
+
+  const list = loadList(LS_VENDAS_KEY);
+  list.push(venda);
+  saveList(LS_VENDAS_KEY, list);
+}
+
+function formatar(){
+  const raw = (document.getElementById('texto').value || '').trim();
+  if(!raw){
+    alert('Cole o texto do pedido primeiro.');
+    return;
+  }
+
+  const parsed = parsePedido(raw);
+
+  // Chips de info detectada
+  const kv = document.getElementById('kv');
+  kv.innerHTML = '';
+
+  function addChip(label, value){
+    if(!value) return;
+    const s = document.createElement('span');
+    s.innerHTML = '<b>'+label+':</b> ' + String(value);
+    kv.appendChild(s);
+  }
+
+  addChip('Atendente', parsed.atendente);
+  addChip('Nome', parsed.nome);
+  addChip('Tipo', parsed.tipo);
+  addChip('Telefone', parsed.telefone);
+  addChip('Pagamento', parsed.pagamento);
+  addChip('Itens', (parsed.itens||[]).length);
+  addChip('Total', moneyBR(parsed.total||0));
+
+  // Preview em 80mm (fica melhor de ver)
+  const textoCupom = buildCupom(parsed, '80');
+  document.getElementById('preview').textContent = textoCupom;
+  document.getElementById('parsedPanel').style.display = 'block';
+}
+
+function imprimir(largura){
+  const raw = (document.getElementById('texto').value || '').trim();
+  if(!raw){
+    alert('Cole o texto do pedido antes de imprimir.');
+    return;
+  }
+
+  const parsed = parsePedido(raw);
+
+  if(!parsed.itens || parsed.itens.length === 0){
+    const ok = confirm('Não consegui identificar os ITENS automaticamente.\nMesmo assim deseja imprimir o texto bruto?');
+    if(!ok) return;
+
+    // fallback: imprime bruto
+    const w = (largura === '58') ? 32 : 42;
+    const now = new Date();
+
+    function center(t){
+      t = String(t||'');
+      if(t.length >= w) return t.substring(0,w);
+      const esp = Math.floor((w - t.length)/2);
+      return ' '.repeat(esp) + t;
+    }
+
+    function wrapLines(text){
+      const out = [];
+      let t = normalizeText(text);
+      const lines = t.split('\n');
+      lines.forEach(line=>{
+        let s = String(line||'');
+        if(s.trim().length === 0){
+          out.push('');
+          return;
+        }
+        while(s.length > 0){
+          const part = s.substring(0, w);
+          out.push(part);
+          s = s.substring(part.length);
+        }
+      });
+      return out;
+    }
+
+    const linhas = [];
+    linhas.push(center(BRAND));
+    linhas.push(center('PEDIDO WHATSAPP'));
+    linhas.push('-'.repeat(w));
+    linhas.push('Data/Hora: ' + formatDataHora(now));
+    linhas.push('-'.repeat(w));
+    wrapLines(raw).forEach(x=>linhas.push(x));
+    linhas.push('-'.repeat(w));
+    linhas.push(center('*** PRODUCAO ***'));
+    linhas.push('');
+
+    doPrint(linhas.join('\n'), largura);
+    return;
+  }
+
+  // Salva no histórico (se marcado)
+  const salvar = document.getElementById('salvarHistorico').checked;
+  if(salvar){
+    salvarNoHistorico(parsed);
+  }
+
+  const textoCupom = buildCupom(parsed, largura);
+  doPrint(textoCupom, largura);
+}
+
+function doPrint(textoFinal, largura){
+  const css =
+    '<style>' +
+    '@page{size:' + (largura === '58' ? '58mm' : '80mm') + ' auto;margin:2mm;}' +
+    'body{font-family:"Courier New",monospace;font-size:11px;margin:0;}' +
+    'pre{white-space:pre-wrap;margin:0;}' +
+    '</style>';
+
+  const win = window.open('', 'PRINT', 'height=650,width=420');
+  win.document.write('<html><head><meta charset="UTF-8">' + css + '</head><body><pre>' + textoFinal + '</pre></body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(function(){ win.print(); }, 250);
+}
+</script>
+</body>
+</html>

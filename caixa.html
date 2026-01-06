@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Caixa Diário - Boteco do Belém</title>
+<style>
+body{margin:0;font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;background:#121212;color:#fff}
+header{background:linear-gradient(135deg,#8B4513 0%, #D2691E 100%);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header img{height:40px}
+a{color:#FFD700;text-decoration:none;font-weight:700}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.panel{background:#1e1e1e;border-radius:14px;border:1px solid rgba(255,255,255,.12);padding:14px;margin-bottom:14px}
+.h1{font-size:20px;font-weight:900;margin-bottom:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.label{font-size:11px;color:#b6b6b6;margin-bottom:4px;font-weight:700}
+.input,textarea,select{box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.18);padding:8px;background:#111;color:#fff;font-size:13px}
+textarea{resize:vertical;min-height:60px}
+.btnRow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{border-radius:999px;border:0;padding:10px 14px;font-weight:800;cursor:pointer;font-size:13px}
+.btn.primary{background:#FFD700;color:#121212}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff}
+.btn.success{background:#4caf50;color:#fff}
+.btn.danger{background:#d32f2f;color:#fff}
+.small{font-size:11px;color:#b6b6b6;margin-top:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.totalBox{background:#2a2a2a;border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:12px}
+.totalRow{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:#ddd}
+.totalRow.big{font-size:22px;font-weight:900;color:#FFD700;margin-top:10px;border-top:1px solid rgba(255,255,255,.18);padding-top:10px}
+.emptyState{padding:22px;text-align:center;color:#888;border:1px dashed rgba(255,255,255,.2);border-radius:10px;margin-top:14px}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+th,td{border:1px solid rgba(255,255,255,.18);padding:8px;text-align:left}
+th{background:#2a2a2a;font-size:12px;font-weight:700}
+.loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:999;display:flex;align-items:center;justify-content:center}
+.loginBox{background:#1e1e1e;border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:24px;max-width:340px;width:90%}
+.loginBox h2{margin-top:0;color:#FFD700}
+.loginBox input{width:100%;box-sizing:border-box;margin-bottom:12px}
+@media print{
+  body{background:#fff;color:#000}
+  .no-print{display:none}
+  .panel{border:1px solid #ccc}
+  th{background:#ddd;color:#000}
+}
+@media (max-width:860px){
+  .grid2,.grid3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="loginScreen">
+  <div class="loginBox">
+    <h2>🔒 Acesso ao Caixa</h2>
+    <div class="label">Digite a senha:</div>
+    <input type="password" id="senhaInput" class="input" placeholder="Senha" />
+    <button class="btn primary" style="width:100%" onclick="tentarLogin()">Entrar</button>
+    <div class="small" style="margin-top:10px">Senha padrão: <strong>1234</strong></div>
+  </div>
+</div>
+
+<header class="no-print">
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div style="font-weight:900;font-size:15px">Caixa Diário</div>
+  </div>
+  <a href="./index.html">Voltar ao site</a>
+</header>
+
+<div class="wrap" id="appContent" style="display:none">
+  <div class="panel no-print">
+    <div class="h1">Caixa do dia</div>
+    <div class="row">
+      <div>
+        <div class="label">Data</div>
+        <input type="date" id="dataCaixa" class="input" />
+      </div>
+      <div>
+        <button class="btn primary" onclick="carregarCaixa()">Carregar caixa</button>
+      </div>
+    </div>
+    <div class="btnRow">
+      <button class="btn ghost" onclick="window.print()">Imprimir fechamento</button>
+      <button class="btn danger" onclick="fecharCaixa()">Fechar e limpar dia</button>
+    </div>
+    <div class="small">
+      Os dados ficam salvos neste aparelho. Use "Imprimir fechamento" antes de fechar o caixa.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Resumo automático (vendas do sistema)</div>
+    <div class="grid3">
+      <div class="totalBox">
+        <div class="totalRow"><span>Comandas (garçom)</span><span id="qtdComandas">0</span></div>
+        <div class="totalRow"><span>Total</span><span id="totalComandas">R$ 0,00</span></div>
+      </div>
+      <div class="totalBox">
+        <div class="totalRow"><span>Vendas (Delivery/Balcão)</span><span id="qtdVendas">0</span></div>
+        <div class="totalRow"><span>Total</span><span id="totalVendas">R$ 0,00</span></div>
+      </div>
+      <div class="totalBox">
+        <div class="totalRow big"><span>Total vendas</span><span id="totalVendasSistema">R$ 0,00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel no-print">
+    <div class="h1">Lançamentos manuais (entradas e saídas)</div>
+    <div class="row">
+      <div style="flex:1 1 100px">
+        <div class="label">Tipo</div>
+        <select id="lanTipo" class="input">
+          <option value="entrada">Entrada (+)</option>
+          <option value="saida">Saída (-)</option>
+        </select>
+      </div>
+      <div style="flex:2 1 150px">
+        <div class="label">Descrição</div>
+        <input id="lanDesc" class="input" placeholder="Ex: Troco, Despesa, etc." />
+      </div>
+      <div style="flex:1 1 100px">
+        <div class="label">Valor (R$)</div>
+        <input id="lanValor" class="input" type="number" step="0.01" placeholder="0.00" />
+      </div>
+      <div style="flex:0 0 auto;align-self:flex-end">
+        <button class="btn success" onclick="adicionarLancamento()">Adicionar</button>
+      </div>
+    </div>
+    <div class="small">Use entradas para adicionar valores extras (ex: troco inicial) e saídas para despesas.</div>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Lançamentos do dia</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">Hora</th>
+          <th style="width:100px">Tipo</th>
+          <th>Descrição</th>
+          <th style="width:110px">Valor</th>
+          <th class="no-print" style="width:80px">Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyLancamentos">
+        <tr><td colspan="5" class="emptyState">Nenhum lançamento manual.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Fechamento do Caixa</div>
+    <div class="totalBox">
+      <div class="totalRow"><span>Vendas do sistema</span><span id="fechVendasSistema">R$ 0,00</span></div>
+      <div class="totalRow"><span>Entradas manuais (+)</span><span id="fechEntradas">R$ 0,00</span></div>
+      <div class="totalRow"><span>Saídas manuais (-)</span><span id="fechSaidas">R$ 0,00</span></div>
+      <div class="totalRow big"><span>SALDO FINAL</span><span id="fechSaldoFinal">R$ 0,00</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const LS_COMANDAS_KEY = 'boteco_comandas_historico';
+const LS_VENDAS_KEY = 'boteco_vendas_historico';
+const LS_CAIXA_KEY = 'boteco_caixa_lancamentos';
+const SENHA_CAIXA = '1234';
+
+let DATA_ATUAL = '';
+let LANCAMENTOS = [];
+
+function formatMoney(v){
+  return 'R$ ' + Number(v||0).toFixed(2).replace('.',',');
+}
+function formatHora(iso){
+  const d = new Date(iso);
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function loadList(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return [];
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v : [];
+  }catch(e){
+    return [];
+  }
+}
+function saveList(key, arr){
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+function tentarLogin(){
+  const inp = document.getElementById('senhaInput');
+  const senha = (inp.value || '').trim();
+  if(senha === SENHA_CAIXA){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appContent').style.display = 'block';
+    inicializarCaixa();
+  } else {
+    alert('Senha incorreta!');
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+function inicializarCaixa(){
+  const hoje = new Date();
+  const dd = String(hoje.getDate()).padStart(2,'0');
+  const mm = String(hoje.getMonth()+1).padStart(2,'0');
+  const yyyy = hoje.getFullYear();
+  document.getElementById('dataCaixa').value = `${yyyy}-${mm}-${dd}`;
+  carregarCaixa();
+}
+
+function carregarCaixa(){
+  const diaStr = document.getElementById('dataCaixa').value;
+  if(!diaStr){
+    alert('Escolha a data do caixa.');
+    return;
+  }
+  DATA_ATUAL = diaStr;
+
+  const inicio = new Date(diaStr); inicio.setHours(0,0,0,0);
+  const fim = new Date(diaStr); fim.setHours(23,59,59,999);
+
+  const comandasAll = loadList(LS_COMANDAS_KEY);
+  const vendasAll = loadList(LS_VENDAS_KEY);
+
+  const comandas = comandasAll.filter(c=>{
+    const d = new Date(c.timestamp);
+    return d>=inicio && d<=fim;
+  });
+
+  const vendas = vendasAll.filter(v=>{
+    const d = new Date(v.timestamp);
+    return d>=inicio && d<=fim;
+  });
+
+  const totalComandas = comandas.reduce((s,c)=>s+Number(c.total||0),0);
+  const totalVendas = vendas.reduce((s,v)=>s+Number(v.total||0),0);
+  const totalVendasSistema = totalComandas + totalVendas;
+
+  document.getElementById('qtdComandas').textContent = String(comandas.length);
+  document.getElementById('totalComandas').textContent = formatMoney(totalComandas);
+
+  document.getElementById('qtdVendas').textContent = String(vendas.length);
+  document.getElementById('totalVendas').textContent = formatMoney(totalVendas);
+
+  document.getElementById('totalVendasSistema').textContent = formatMoney(totalVendasSistema);
+
+  carregarLancamentos();
+  calcularFechamento();
+}
+
+function carregarLancamentos(){
+  const allLancamentos = loadList(LS_CAIXA_KEY);
+  LANCAMENTOS = allLancamentos.filter(l => l.data === DATA_ATUAL);
+  renderLancamentos();
+}
+
+function renderLancamentos(){
+  const tbody = document.getElementById('tbodyLancamentos');
+  tbody.innerHTML = '';
+
+  if(!LANCAMENTOS || LANCAMENTOS.length === 0){
+    tbody.innerHTML = '<tr><td colspan="5" class="emptyState">Nenhum lançamento manual.</td></tr>';
+    return;
+  }
+
+  LANCAMENTOS.forEach((l, i) => {
+    const tipo = l.tipo === 'entrada' ? 'ENTRADA (+)' : 'SAÍDA (-)';
+    const cor = l.tipo === 'entrada' ? '#4caf50' : '#d32f2f';
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + formatHora(l.timestamp) + '</td>' +
+      '<td style="color:' + cor + ';font-weight:700">' + tipo + '</td>' +
+      '<td>' + (l.descricao || '') + '</td>' +
+      '<td style="text-align:right">' + formatMoney(l.valor) + '</td>' +
+      '<td class="no-print"><button class="btn danger" style="padding:6px 10px;font-size:11px" onclick="removerLancamento(' + i + ')">Remover</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function adicionarLancamento(){
+  const tipo = document.getElementById('lanTipo').value;
+  const desc = (document.getElementById('lanDesc').value || '').trim();
+  const valor = parseFloat(document.getElementById('lanValor').value || '0');
+
+  if(!desc){
+    alert('Preencha a descrição do lançamento.');
+    return;
+  }
+  if(!valor || valor <= 0){
+    alert('Preencha o valor (maior que zero).');
+    return;
+  }
+
+  const lancamento = {
+    timestamp: new Date().toISOString(),
+    data: DATA_ATUAL,
+    tipo: tipo,
+    descricao: desc,
+    valor: valor
+  };
+
+  LANCAMENTOS.push(lancamento);
+
+  const allLancamentos = loadList(LS_CAIXA_KEY);
+  allLancamentos.push(lancamento);
+  saveList(LS_CAIXA_KEY, allLancamentos);
+
+  document.getElementById('lanDesc').value = '';
+  document.getElementById('lanValor').value = '';
+
+  renderLancamentos();
+  calcularFechamento();
+}
+
+function removerLancamento(idx){
+  if(!confirm('Remover este lançamento?')) return;
+
+  const removido = LANCAMENTOS[idx];
+  LANCAMENTOS.splice(idx, 1);
+
+  let allLancamentos = loadList(LS_CAIXA_KEY);
+  allLancamentos = allLancamentos.filter(l =>
+    !(l.timestamp === removido.timestamp && l.descricao === removido.descricao && l.valor === removido.valor)
+  );
+  saveList(LS_CAIXA_KEY, allLancamentos);
+
+  renderLancamentos();
+  calcularFechamento();
+}
+
+function calcularFechamento(){
+  const vendasSistema = parseFloat(document.getElementById('totalVendasSistema').textContent.replace('R$','').trim().replace(',','.')) || 0;
+
+  const entradas = LANCAMENTOS.filter(l => l.tipo === 'entrada').reduce((s, l) => s + Number(l.valor || 0), 0);
+  const saidas = LANCAMENTOS.filter(l => l.tipo === 'saida').reduce((s, l) => s + Number(l.valor || 0), 0);
+
+  const saldoFinal = vendasSistema + entradas - saidas;
+
+  document.getElementById('fechVendasSistema').textContent = formatMoney(vendasSistema);
+  document.getElementById('fechEntradas').textContent = formatMoney(entradas);
+  document.getElementById('fechSaidas').textContent = formatMoney(saidas);
+  document.getElementById('fechSaldoFinal').textContent = formatMoney(saldoFinal);
+}
+
+function fecharCaixa(){
+  if(!confirm('Isso vai LIMPAR os lançamentos manuais deste dia. Certifique-se de ter impresso o fechamento. Continuar?')) return;
+
+  let allLancamentos = loadList(LS_CAIXA_KEY);
+  allLancamentos = allLancamentos.filter(l => l.data !== DATA_ATUAL);
+  saveList(LS_CAIXA_KEY, allLancamentos);
+
+  LANCAMENTOS = [];
+  renderLancamentos();
+  calcularFechamento();
+  alert('Caixa do dia ' + DATA_ATUAL + ' foi fechado e limpo.');
+}
+
+document.getElementById('senhaInput').addEventListener('keyup', function(ev){
+  if(ev.key === 'Enter') tentarLogin();
+});
+</script>
+</body>
+</html>

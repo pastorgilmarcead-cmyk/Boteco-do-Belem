@@ -1,0 +1,15 @@
+{
+  "brand": {
+    "name": "Boteco do Belém",
+    "tagline": "Hamburgueria Artesanal de Verdade",
+    "whatsapp_number_e164": "5598999999999",
+    "instagram_url": "https://instagram.com/SEUINSTAGRAM",
+    "address": "Rua do Belém, 123 - Centro - Sua Cidade",
+    "hours": "Seg a Dom • 18h às 23h"
+  },
+  "delivery": {
+    "enabled": true,
+    "default_fee": 5.0,
+    "free_above": 0.0
+  }
+}

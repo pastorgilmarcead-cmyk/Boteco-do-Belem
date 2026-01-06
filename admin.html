@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Boteco do Belém</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+
+<header class="header">
+  <div class="logoWrap">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div class="headerTitle">Admin - Boteco do Belém</div>
+  </div>
+  <nav class="headerNav">
+    <a href="./index.html">Voltar ao site</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" id="tabConfig" onclick="mudarAba('config')">Configurações</div>
+    <div class="tab" id="tabProdutos" onclick="mudarAba('produtos')">Produtos</div>
+    <div class="tab" id="tabBackup" onclick="mudarAba('backup')">Backup & Restauração</div>
+  </div>
+
+  <div id="abaConfig" class="tabContent active">
+    <div class="panel">
+      <div class="h1">Configurações Gerais</div>
+      <div class="small">Ajuste WhatsApp, delivery, taxa e senha do app.</div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Delivery</div>
+      <div class="row">
+        <div>
+          <label style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="cfgDeliveryAtivo" />
+            <span>Permitir pedidos de Delivery</span>
+          </label>
+        </div>
+        <div>
+          <span class="label">Taxa padrão (R$)</span>
+          <input type="number" id="cfgTaxaEntrega" step="0.01" min="0" placeholder="0.00" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">WhatsApp</div>
+      <div class="row">
+        <div>
+          <span class="label">Número (somente dígitos, com DDI+DDD)</span>
+          <input id="cfgWhats" placeholder="Ex: 5549999999999" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Senha para clientes (opcional)</div>
+      <div class="row">
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <input type="checkbox" id="cfgSenhaApp" />
+            <span>Exigir senha para os clientes</span>
+          </label>
+          <span class="label">Senha do app</span>
+          <input id="cfgSenhaAppValor" placeholder="Ex: PEDIDO2025" />
+        </div>
+      </div>
+    </div>
+
+    <div class="btnRow">
+      <button class="btn primary" type="button" onclick="salvarConfiguracoesAdmin()">Salvar Configurações</button>
+    </div>
+  </div>
+
+  <div id="abaProdutos" class="tabContent">
+    <div class="panel">
+      <div class="h1">Produtos do Cardápio</div>
+      <div class="small">Cadastre, edite, exclua e ative/desative os produtos.</div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <span class="label">Filtrar por categoria</span>
+          <select id="fCategoriaProd"></select>
+        </div>
+        <div>
+          <span class="label">Buscar</span>
+          <input id="fBuscaProd" placeholder="Ex.: SMASH, 2, COCA..." />
+        </div>
+        <div style="flex:1 1 auto"></div>
+        <div>
+          <button class="btn ghost" type="button" onclick="recarregarProdutos()">Recarregar</button>
+        </div>
+      </div>
+      <div class="small" id="msgAvisoProdutos" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Cadastrar novo produto</div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <span class="label">Código</span>
+          <input id="novoCode" placeholder="Ex: 34" />
+        </div>
+        <div>
+          <span class="label">Nome</span>
+          <input id="novoName" placeholder="Ex: X-SALADA" />
+        </div>
+        <div>
+          <span class="label">Categoria</span>
+          <input id="novoCategory" placeholder="Ex: SMASH" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <span class="label">Preço (R$)</span>
+          <input id="novoPrice" type="number" step="0.01" min="0" placeholder="0.00" />
+        </div>
+        <div style="flex:2 1 320px">
+          <span class="label">Descrição</span>
+          <input id="novoDesc" placeholder="Descrição do produto..." />
+        </div>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="adicionarNovoProduto()">Adicionar produto</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="h2">Produtos <span class="badge" id="badgeCountProd">0 produtos</span></div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:80px">Código</th>
+              <th>Nome</th>
+              <th style="width:150px">Categoria</th>
+              <th class="money" style="width:110px">Preço</th>
+              <th style="width:90px;text-align:center">Ativo?</th>
+              <th style="width:90px;text-align:center">Editar</th>
+            </tr>
+          </thead>
+          <tbody id="prodBody"></tbody>
+        </table>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="salvarAlteracoesProdutos()">Salvar alterações</button>
+        <button class="btn ghost" type="button" onclick="ativarTodos()">Ativar todos</button>
+        <button class="btn ghost" type="button" onclick="desativarTodos()">Desativar todos</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="abaBackup" class="tabContent">
+    <div class="panel">
+      <div class="h1">Backup & Restauração</div>
+    </div>
+    <div class="panel">
+      <div class="h2">Exportar JSON (backup)</div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="exportarBackup()">Exportar JSON</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="h2">Importar JSON (restaurar)</div>
+      <div class="row">
+        <div>
+          <input type="file" id="fileBackup" accept=".json,application/json" />
+        </div>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" type="button" onclick="importarBackup()">Importar JSON</button>
+      </div>
+    </div>
+    <div class="panel" style="border:2px solid #ff4444">
+      <div class="h2" style="color:#ff4444">Limpar TUDO (cuidado!)</div>
+      <div class="btnRow">
+        <button class="btn" style="background:#ff4444;color:#fff" type="button" onclick="limparTudo()">LIMPAR TUDO</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalEditarProduto" class="loginOverlay" style="display:none">
+  <div class="loginBox" style="max-width:520px">
+    <h1>Editar produto</h1>
+    <div class="row">
+      <div>
+        <span class="label">Código</span>
+        <input id="editCode" readonly />
+      </div>
+      <div>
+        <span class="label">Categoria</span>
+        <input id="editCategory" />
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div>
+        <span class="label">Nome</span>
+        <input id="editName" />
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div>
+        <span class="label">Preço (R$)</span>
+        <input id="editPrice" type="number" step="0.01" min="0" />
+      </div>
+      <div style="flex:1 1 200px">
+        <span class="label">Ativo?</span>
+        <select id="editActive">
+          <option value="1">Sim</option>
+          <option value="0">Não</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <span class="label">Descrição</span>
+      <textarea id="editDesc"></textarea>
+    </div>
+    <div class="btnRow">
+      <button class="btn primary" type="button" onclick="salvarEdicaoProduto()">Aplicar</button>
+      <button class="btn ghost" type="button" onclick="fecharEditarProduto()">Cancelar</button>
+      <button class="btn" style="background:#ff4444;color:#fff" type="button" onclick="excluirProduto()">Excluir</button>
+    </div>
+    <div class="errorMsg" id="editError"></div>
+  </div>
+</div>
+
+<script src="./assets/js/app.js"></script>
+<script>
+var PRODUTOS_FILTRADOS = [];
+var PRODUTO_EDITANDO_CODE = null;
+
+function mudarAba(nome){
+  document.getElementById('tabConfig').classList.remove('active');
+  document.getElementById('tabProdutos').classList.remove('active');
+  document.getElementById('tabBackup').classList.remove('active');
+  document.getElementById('abaConfig').classList.remove('active');
+  document.getElementById('abaProdutos').classList.remove('active');
+  document.getElementById('abaBackup').classList.remove('active');
+
+  if(nome === 'config'){
+    document.getElementById('tabConfig').classList.add('active');
+    document.getElementById('abaConfig').classList.add('active');
+  }else if(nome === 'produtos'){
+    document.getElementById('tabProdutos').classList.add('active');
+    document.getElementById('abaProdutos').classList.add('active');
+  }else{
+    document.getElementById('tabBackup').classList.add('active');
+    document.getElementById('abaBackup').classList.add('active');
+  }
+}
+
+function preencherCamposConfigAdmin(){
+  var cfg = carregarConfiguracoes();
+  document.getElementById('cfgDeliveryAtivo').checked = !!cfg.deliveryAtivo;
+  document.getElementById('cfgTaxaEntrega').value = Number(cfg.taxaEntrega || 0).toFixed(2);
+  document.getElementById('cfgWhats').value = cfg.whatsapp || '';
+  document.getElementById('cfgSenhaApp').checked = !!cfg.senhaAppAtiva;
+  document.getElementById('cfgSenhaAppValor').value = cfg.senhaAppValor || '';
+}
+
+function salvarConfiguracoesAdmin(){
+  var cfg = {
+    deliveryAtivo: document.getElementById('cfgDeliveryAtivo').checked,
+    taxaEntrega: parseFloat(document.getElementById('cfgTaxaEntrega').value || 0),
+    whatsapp: (document.getElementById('cfgWhats').value || '').trim(),
+    senhaAppAtiva: document.getElementById('cfgSenhaApp').checked,
+    senhaAppValor: (document.getElementById('cfgSenhaAppValor').value || '').trim()
+  };
+  salvarConfiguracoesObj(cfg);
+  alert('Configurações salvas.');
+}
+
+function recarregarProdutos(){
+  carregarProdutosBase().then(function(){
+    preencherFiltroCategoriasProd();
+    aplicarFiltrosProd();
+    atualizarAvisoProdutos();
+  });
+}
+
+function atualizarAvisoProdutos(){
+  var el = document.getElementById('msgAvisoProdutos');
+  if(!el) return;
+  if(!PRODUTOS || !PRODUTOS.length){
+    el.textContent = 'Nenhum produto carregado. Use Live Server/localhost para o fetch funcionar.';
+  }else{
+    el.textContent = '';
+  }
+}
+
+function preencherFiltroCategoriasProd(){
+  var sel = document.getElementById('fCategoriaProd');
+  var map = {};
+  var cats = [];
+  (PRODUTOS || []).forEach(function(p){
+    var c = String(p.category || '').trim();
+    if(c && !map[c]){
+      map[c] = true;
+      cats.push(c);
+    }
+  });
+  cats.sort();
+  sel.innerHTML = '<option value="">Todas</option>';
+  cats.forEach(function(c){
+    var opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function aplicarFiltrosProd(){
+  var cat = (document.getElementById('fCategoriaProd').value || '').trim().toLowerCase();
+  var busca = (document.getElementById('fBuscaProd').value || '').trim().toLowerCase();
+  var list = (PRODUTOS || []).slice();
+  if(cat){
+    list = list.filter(function(p){
+      return String(p.category || '').toLowerCase() === cat;
+    });
+  }
+  if(busca){
+    list = list.filter(function(p){
+      var code = String(p.code || '').toLowerCase();
+      var name = String(p.name || '').toLowerCase();
+      var desc = String(p.description || '').toLowerCase();
+      return code.indexOf(busca) >= 0 || name.indexOf(busca) >= 0 || desc.indexOf(busca) >= 0;
+    });
+  }
+  PRODUTOS_FILTRADOS = list;
+  renderTabelaProd();
+}
+
+function renderTabelaProd(){
+  var tbody = document.getElementById('prodBody');
+  tbody.innerHTML = '';
+  (PRODUTOS_FILTRADOS || []).forEach(function(p){
+    var ativo = p.active !== false;
+    var tr = document.createElement('tr');
+    var td1 = document.createElement('td');
+    td1.textContent = p.code || '';
+    tr.appendChild(td1);
+    var td2 = document.createElement('td');
+    td2.textContent = p.name || '';
+    tr.appendChild(td2);
+    var td3 = document.createElement('td');
+    td3.textContent = p.category || '';
+    tr.appendChild(td3);
+    var td4 = document.createElement('td');
+    td4.className = 'money';
+    td4.textContent = formatMoney(p.price || 0);
+    tr.appendChild(td4);
+    var td5 = document.createElement('td');
+    td5.style.textAlign = 'center';
+    var chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.checked = ativo;
+    chk.setAttribute('data-code', String(p.code || ''));
+    chk.onchange = function(){
+      var code = String(this.getAttribute('data-code') || '');
+      var prod = (PRODUTOS || []).find(function(x){
+        return String(x.code) === code;
+      });
+      if(prod) prod.active = !!chk.checked;
+    };
+    td5.appendChild(chk);
+    tr.appendChild(td5);
+    var td6 = document.createElement('td');
+    td6.style.textAlign = 'center';
+    var btn = document.createElement('button');
+    btn.className = 'btn ghost';
+    btn.type = 'button';
+    btn.style.fontSize = '11px';
+    btn.style.padding = '4px 10px';
+    btn.textContent = 'Editar';
+    btn.onclick = function(){
+      abrirEditarProduto(String(p.code || ''));
+    };
+    td6.appendChild(btn);
+    tr.appendChild(td6);
+    tbody.appendChild(tr);
+  });
+  document.getElementById('badgeCountProd').textContent = (PRODUTOS_FILTRADOS.length || 0) + ' produtos';
+}
+
+function salvarAlteracoesProdutos(){
+  try{
+    localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(PRODUTOS || []));
+    alert('Alterações salvas.');
+  }catch(e){
+    alert('Erro ao salvar.');
+  }
+}
+
+function ativarTodos(){
+  (PRODUTOS || []).forEach(function(p){ p.active = true; });
+  aplicarFiltrosProd();
+}
+
+function desativarTodos(){
+  (PRODUTOS || []).forEach(function(p){ p.active = false; });
+  aplicarFiltrosProd();
+}
+
+function adicionarNovoProduto(){
+  var code = String(document.getElementById('novoCode').value || '').trim();
+  var name = String(document.getElementById('novoName').value || '').trim();
+  var category = String(document.getElementById('novoCategory').value || '').trim();
+  var price = parseFloat(document.getElementById('novoPrice').value || 0);
+  var desc = String(document.getElementById('novoDesc').value || '').trim();
+  if(!code || !name || !category){
+    alert('Preencha Código, Nome e Categoria.');
+    return;
+  }
+  var existe = (PRODUTOS || []).some(function(p){
+    return String(p.code).trim() === code;
+  });
+  if(existe){
+    alert('Já existe um produto com esse código.');
+    return;
+  }
+  (PRODUTOS || []).push({
+    code: code,
+    name: name,
+    category: category,
+    description: desc,
+    price: Number(price || 0),
+    active: true
+  });
+  document.getElementById('novoCode').value = '';
+  document.getElementById('novoName').value = '';
+  document.getElementById('novoCategory').value = '';
+  document.getElementById('novoPrice').value = '';
+  document.getElementById('novoDesc').value = '';
+  preencherFiltroCategoriasProd();
+  aplicarFiltrosProd();
+  alert('Produto adicionado. Clique em "Salvar alterações".');
+}
+
+function abrirEditarProduto(code){
+  var c = String(code || '').trim();
+  var p = (PRODUTOS || []).find(function(x){
+    return String(x.code).trim() === c;
+  });
+  if(!p){
+    alert('Produto não encontrado.');
+    return;
+  }
+  PRODUTO_EDITANDO_CODE = c;
+  document.getElementById('editError').textContent = '';
+  document.getElementById('editCode').value = p.code || '';
+  document.getElementById('editName').value = p.name || '';
+  document.getElementById('editCategory').value = p.category || '';
+  document.getElementById('editDesc').value = p.description || '';
+  document.getElementById('editPrice').value = Number(p.price || 0).toFixed(2);
+  document.getElementById('editActive').value = (p.active === false) ? '0' : '1';
+  document.getElementById('modalEditarProduto').style.display = 'flex';
+}
+
+function fecharEditarProduto(){
+  document.getElementById('modalEditarProduto').style.display = 'none';
+  PRODUTO_EDITANDO_CODE = null;
+}
+
+function salvarEdicaoProduto(){
+  if(!PRODUTO_EDITANDO_CODE) return;
+  var idx = (PRODUTOS || []).findIndex(function(x){
+    return String(x.code).trim() === PRODUTO_EDITANDO_CODE;
+  });
+  if(idx < 0){
+    alert('Produto não encontrado.');
+    fecharEditarProduto();
+    return;
+  }
+  var name = String(document.getElementById('editName').value || '').trim();
+  var category = String(document.getElementById('editCategory').value || '').trim();
+  var desc = String(document.getElementById('editDesc').value || '').trim();
+  var price = parseFloat(document.getElementById('editPrice').value || 0);
+  var active = document.getElementById('editActive').value === '1';
+  if(!name || !category){
+    document.getElementById('editError').textContent = 'Preencha Nome e Categoria.';
+    return;
+  }
+  PRODUTOS[idx].name = name;
+  PRODUTOS[idx].category = category;
+  PRODUTOS[idx].description = desc;
+  PRODUTOS[idx].price = Number(price || 0);
+  PRODUTOS[idx].active = active;
+  preencherFiltroCategoriasProd();
+  aplicarFiltrosProd();
+  alert('Alterações aplicadas. Clique em "Salvar alterações".');
+  fecharEditarProduto();
+}
+
+function excluirProduto(){
+  if(!PRODUTO_EDITANDO_CODE) return;
+  var p = (PRODUTOS || []).find(function(x){
+    return String(x.code).trim() === PRODUTO_EDITANDO_CODE;
+  });
+  if(!p){
+    fecharEditarProduto();
+    return;
+  }
+  if(!confirm('Excluir "' + (p.name || p.code) + '"?')) return;
+  PRODUTOS = (PRODUTOS || []).filter(function(x){
+    return String(x.code).trim() !== PRODUTO_EDITANDO_CODE;
+  });
+  try{
+    localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(PRODUTOS || []));
+  }catch(e){}
+  preencherFiltroCategoriasProd();
+  aplicarFiltrosProd();
+  alert('Produto excluído.');
+  fecharEditarProduto();
+}
+
+document.getElementById('modalEditarProduto').onclick = function(ev){
+  if(ev.target === this) fecharEditarProduto();
+};
+
+function exportarBackup(){
+  try{
+    var backup = {
+      versao: '1.0',
+      dataExportacao: new Date().toISOString(),
+      configuracoes: carregarConfiguracoes(),
+      produtos: PRODUTOS || [],
+      pedidos: getPedidos()
+    };
+    var json = JSON.stringify(backup, null, 2);
+    var blob = new Blob([json], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    a.href = url;
+    a.download = 'backup_boteco_belem_' + ts + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('Backup exportado.');
+  }catch(e){
+    alert('Erro ao exportar: ' + e.message);
+  }
+}
+
+function importarBackup(){
+  var inp = document.getElementById('fileBackup');
+  var file = inp && inp.files ? inp.files[0] : null;
+  if(!file){
+    alert('Selecione um arquivo JSON.');
+    return;
+  }
+  if(!confirm('Isso vai substituir os dados atuais. Continuar?')) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var backup = JSON.parse(String(ev.target.result || ''));
+      if(!backup || !backup.produtos || !backup.configuracoes){
+        alert('Arquivo de backup inválido.');
+        return;
+      }
+      salvarConfiguracoesObj(backup.configuracoes);
+      localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(backup.produtos || []));
+      if(backup.pedidos) localStorage.setItem(LS_PEDIDOS_KEY, JSON.stringify(backup.pedidos || []));
+      alert('Backup restaurado. A página será recarregada.');
+      location.reload();
+    }catch(e){
+      alert('Erro ao importar: ' + e.message);
+    }
+  };
+  reader.onerror = function(){
+    alert('Erro ao ler arquivo.');
+  };
+  reader.readAsText(file);
+}
+
+function limparTudo(){
+  if(!confirm('Isso vai apagar TUDO. Continuar?')) return;
+  if(!confirm('Confirma apagar tudo MESMO?')) return;
+  try{
+    localStorage.removeItem(LS_CONFIG_KEY);
+    localStorage.removeItem(LS_PRODUCTS_KEY);
+    localStorage.removeItem(LS_PEDIDOS_KEY);
+    sessionStorage.removeItem('boteco_cart_v1');
+    alert('Tudo apagado. A página será recarregada.');
+    location.reload();
+  }catch(e){
+    alert('Erro ao limpar: ' + e.message);
+  }
+}
+
+function iniciarAdmin(){
+  carregarProdutosBase().then(function(){
+    preencherCamposConfigAdmin();
+    preencherFiltroCategoriasProd();
+    aplicarFiltrosProd();
+    atualizarAvisoProdutos();
+    document.getElementById('fCategoriaProd').addEventListener('change', aplicarFiltrosProd);
+    document.getElementById('fBuscaProd').addEventListener('input', aplicarFiltrosProd);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', iniciarAdmin);
+</script>
+
+</body>
+</html>

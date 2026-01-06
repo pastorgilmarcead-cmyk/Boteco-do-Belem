@@ -1,0 +1,5 @@
+Coloque aqui o arquivo de som:
+novo-pedido.mp3
+
+Pode ser qualquer som curto de notificação/campainha (formato MP3).
+Se não tiver, o app funciona normalmente, só não toca aviso sonoro quando enviar pedido.

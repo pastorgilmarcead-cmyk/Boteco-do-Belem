@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Relatório Diário - Boteco do Belém</title>
+<style>
+body{margin:0;font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;background:#121212;color:#fff}
+header{background:linear-gradient(135deg,#8B4513 0%, #D2691E 100%);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header img{height:40px}
+a{color:#FFD700;text-decoration:none;font-weight:700}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.panel{background:#1e1e1e;border-radius:14px;border:1px solid rgba(255,255,255,.12);padding:14px;margin-bottom:14px}
+.h1{font-size:20px;font-weight:900;margin-bottom:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.label{font-size:11px;color:#b6b6b6;margin-bottom:4px;font-weight:700}
+.input{box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.18);padding:8px;background:#111;color:#fff;font-size:13px}
+.btnRow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{border-radius:999px;border:0;padding:10px 14px;font-weight:800;cursor:pointer;font-size:13px}
+.btn.primary{background:#FFD700;color:#121212}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff}
+.btn.danger{background:#d32f2f;color:#fff}
+.small{font-size:11px;color:#b6b6b6;margin-top:6px}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+th,td{border:1px solid rgba(255,255,255,.18);padding:8px;text-align:left}
+th{background:#2a2a2a;font-size:12px;font-weight:700}
+.totalBox{background:#111;border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px;margin-top:10px}
+.totalRow{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:#ddd}
+.totalRow.big{font-size:22px;font-weight:900;color:#FFD700;margin-top:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.emptyState{padding:22px;text-align:center;color:#888;border:1px dashed rgba(255,255,255,.2);border-radius:10px;margin-top:14px}
+@media print{
+  body{background:#fff;color:#000}
+  .no-print{display:none}
+  .panel{border:1px solid #ccc}
+  th{background:#ddd;color:#000}
+}
+@media (max-width:860px){
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div style="font-weight:900;font-size:15px">Relatório Diário de Vendas</div>
+  </div>
+  <a href="./index.html">Voltar ao site</a>
+</header>
+
+<div class="wrap">
+  <div class="panel no-print">
+    <div class="h1">Filtros</div>
+    <div class="row">
+      <div>
+        <div class="label">Data</div>
+        <input type="date" id="dataDia" class="input" />
+      </div>
+      <div>
+        <button class="btn primary" onclick="carregarRelatorio()">Gerar relatório</button>
+      </div>
+    </div>
+    <div class="btnRow">
+      <button class="btn ghost" onclick="window.print()">Imprimir</button>
+      <button class="btn ghost" onclick="exportarCSV()">Exportar CSV</button>
+      <button class="btn danger" onclick="limparDados()">Limpar histórico</button>
+    </div>
+    <div class="small">
+      Dica: os dados ficam salvos neste aparelho/navegador. Para consolidar em vários aparelhos, precisa centralizar (posso fazer).
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Resumo do dia</div>
+    <div class="grid2">
+      <div class="totalBox">
+        <div class="totalRow"><span>Comandas (garçom)</span><span id="qtdComandas">0</span></div>
+        <div class="totalRow"><span>Total comandas</span><span id="totalComandas">R$ 0,00</span></div>
+      </div>
+      <div class="totalBox">
+        <div class="totalRow"><span>Vendas (Delivery/Balcão)</span><span id="qtdVendas">0</span></div>
+        <div class="totalRow"><span>Total vendas</span><span id="totalVendas">R$ 0,00</span></div>
+      </div>
+    </div>
+    <div class="totalBox">
+      <div class="totalRow big"><span>TOTAL GERAL</span><span id="totalGeral">R$ 0,00</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Produtos (quantidade e total do dia)</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">Código</th>
+          <th>Produto</th>
+          <th style="width:110px">Qtd</th>
+          <th style="width:120px">Total</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyProdutos">
+        <tr><td colspan="4" class="emptyState">Nenhum dado</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Comandas (garçom)</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px">Data/Hora</th>
+          <th style="width:70px">Comanda</th>
+          <th style="width:60px">Mesa</th>
+          <th style="width:110px">Garçom</th>
+          <th>Itens</th>
+          <th style="width:110px">Total</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyComandas">
+        <tr><td colspan="6" class="emptyState">Nenhuma comanda registrada.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="h1">Vendas gerais (Delivery/Balcão)</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px">Data/Hora</th>
+          <th style="width:90px">Tipo</th>
+          <th style="width:140px">Cliente</th>
+          <th>Itens</th>
+          <th style="width:110px">Total</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyVendas">
+        <tr><td colspan="5" class="emptyState">Nenhuma venda registrada.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const LS_COMANDAS_KEY = 'boteco_comandas_historico';
+const LS_VENDAS_KEY = 'boteco_vendas_historico';
+
+function formatMoney(v){
+  return 'R$ ' + Number(v||0).toFixed(2).replace('.',',');
+}
+function formatDateTime(iso){
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return dd+'/'+mm+'/'+yyyy+' '+hh+':'+mi;
+}
+function loadList(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return [];
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function carregarRelatorio(){
+  const diaStr = document.getElementById('dataDia').value;
+
+  const tbodyComandas = document.getElementById('tbodyComandas');
+  const tbodyVendas = document.getElementById('tbodyVendas');
+  const tbodyProdutos = document.getElementById('tbodyProdutos');
+
+  tbodyComandas.innerHTML = '';
+  tbodyVendas.innerHTML = '';
+  tbodyProdutos.innerHTML = '';
+
+  if(!diaStr){
+    tbodyComandas.innerHTML = '<tr><td colspan="6" class="emptyState">Escolha a data acima.</td></tr>';
+    tbodyVendas.innerHTML = '<tr><td colspan="5" class="emptyState">Escolha a data acima.</td></tr>';
+    tbodyProdutos.innerHTML = '<tr><td colspan="4" class="emptyState">Escolha a data acima.</td></tr>';
+    return;
+  }
+
+  const inicio = new Date(diaStr); inicio.setHours(0,0,0,0);
+  const fim = new Date(diaStr); fim.setHours(23,59,59,999);
+
+  const comandasAll = loadList(LS_COMANDAS_KEY);
+  const vendasAll = loadList(LS_VENDAS_KEY);
+
+  const comandas = comandasAll.filter(c=>{
+    const d = new Date(c.timestamp);
+    return d>=inicio && d<=fim;
+  });
+
+  const vendas = vendasAll.filter(v=>{
+    const d = new Date(v.timestamp);
+    return d>=inicio && d<=fim;
+  });
+
+  const totalComandas = comandas.reduce((s,c)=>s+Number(c.total||0),0);
+  const totalVendas = vendas.reduce((s,v)=>s+Number(v.total||0),0);
+  const totalGeral = totalComandas + totalVendas;
+
+  document.getElementById('qtdComandas').textContent = String(comandas.length);
+  document.getElementById('totalComandas').textContent = formatMoney(totalComandas);
+
+  document.getElementById('qtdVendas').textContent = String(vendas.length);
+  document.getElementById('totalVendas').textContent = formatMoney(totalVendas);
+
+  document.getElementById('totalGeral').textContent = formatMoney(totalGeral);
+
+  const produtos = {};
+  function addItem(it){
+    const cod = String(it.code || 'SEM-COD');
+    const nome = String(it.name || 'PRODUTO');
+    const qtd = Number(it.qtd || 0);
+    const price = Number(it.price || 0);
+    if(!qtd) return;
+    if(!produtos[cod]) produtos[cod] = {code:cod, name:nome, qtd:0, total:0};
+    produtos[cod].qtd += qtd;
+    produtos[cod].total += qtd * price;
+    if(nome && produtos[cod].name === 'PRODUTO') produtos[cod].name = nome;
+  }
+  comandas.forEach(c => (c.itens||[]).forEach(addItem));
+  vendas.forEach(v => (v.itens||[]).forEach(addItem));
+
+  const arrProd = Object.values(produtos).sort((a,b)=>b.total-a.total);
+
+  if(arrProd.length===0){
+    tbodyProdutos.innerHTML = '<tr><td colspan="4" class="emptyState">Nenhum produto vendido neste dia.</td></tr>';
+  }else{
+    arrProd.forEach(p=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>'+p.code+'</td>' +
+        '<td>'+p.name+'</td>' +
+        '<td style="text-align:center">'+p.qtd+'</td>' +
+        '<td style="text-align:right">'+formatMoney(p.total)+'</td>';
+      tbodyProdutos.appendChild(tr);
+    });
+  }
+
+  if(comandas.length===0){
+    tbodyComandas.innerHTML = '<tr><td colspan="6" class="emptyState">Nenhuma comanda neste dia.</td></tr>';
+  }else{
+    comandas.forEach(c=>{
+      const itensStr = (c.itens||[]).map(i=>(i.qtd||0)+'x '+(i.name||'')).join(', ');
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>'+formatDateTime(c.timestamp)+'</td>' +
+        '<td>'+ (c.numero||'') +'</td>' +
+        '<td>'+ (c.mesa||'') +'</td>' +
+        '<td>'+ (c.garcom||'') +'</td>' +
+        '<td>'+ itensStr +'</td>' +
+        '<td style="text-align:right">'+formatMoney(c.total||0)+'</td>';
+      tbodyComandas.appendChild(tr);
+    });
+  }
+
+  if(vendas.length===0){
+    tbodyVendas.innerHTML = '<tr><td colspan="5" class="emptyState">Nenhuma venda neste dia.</td></tr>';
+  }else{
+    vendas.forEach(v=>{
+      const itensStr = (v.itens||[]).map(i=>(i.qtd||0)+'x '+(i.name||'')).join(', ');
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>'+formatDateTime(v.timestamp)+'</td>' +
+        '<td>'+ (v.tipo||'') +'</td>' +
+        '<td>'+ (v.cliente||'') +'</td>' +
+        '<td>'+ itensStr +'</td>' +
+        '<td style="text-align:right">'+formatMoney(v.total||0)+'</td>';
+      tbodyVendas.appendChild(tr);
+    });
+  }
+}
+
+function exportarCSV(){
+  const diaStr = document.getElementById('dataDia').value;
+  if(!diaStr){ alert('Selecione a data.'); return; }
+
+  const inicio = new Date(diaStr); inicio.setHours(0,0,0,0);
+  const fim = new Date(diaStr); fim.setHours(23,59,59,999);
+
+  const comandas = loadList(LS_COMANDAS_KEY).filter(c=>{
+    const d = new Date(c.timestamp);
+    return d>=inicio && d<=fim;
+  });
+  const vendas = loadList(LS_VENDAS_KEY).filter(v=>{
+    const d = new Date(v.timestamp);
+    return d>=inicio && d<=fim;
+  });
+
+  let csv = 'TIPO;DATA;HORA;IDENTIFICACAO;DETALHE;ITENS;TOTAL\n';
+
+  comandas.forEach(c=>{
+    const d = new Date(c.timestamp);
+    const data = d.toLocaleDateString('pt-BR');
+    const hora = d.toLocaleTimeString('pt-BR');
+    const itens = (c.itens||[]).map(i=>(i.qtd||0)+'x '+(i.name||'')).join(' | ');
+    const ident = 'COMANDA '+(c.numero||'');
+    const detalhe = 'Mesa '+(c.mesa||'')+' / Garçom '+(c.garcom||'');
+    csv += `COMANDA;${data};${hora};${ident};${detalhe};${itens};${Number(c.total||0)}\n`;
+  });
+
+  vendas.forEach(v=>{
+    const d = new Date(v.timestamp);
+    const data = d.toLocaleDateString('pt-BR');
+    const hora = d.toLocaleTimeString('pt-BR');
+    const itens = (v.itens||[]).map(i=>(i.qtd||0)+'x '+(i.name||'')).join(' | ');
+    const ident = (v.tipo||'VENDA')+' - '+(v.cliente||'');
+    csv += `VENDA;${data};${hora};${ident};;;${itens};${Number(v.total||0)}\n`;
+  });
+
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'relatorio_vendas_'+diaStr+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function limparDados(){
+  if(!confirm('Isso vai apagar TODO o histórico de comandas e vendas desta máquina. Continuar?')) return;
+  localStorage.removeItem(LS_COMANDAS_KEY);
+  localStorage.removeItem(LS_VENDAS_KEY);
+  alert('Histórico apagado.');
+  carregarRelatorio();
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const hoje = new Date();
+  const dd = String(hoje.getDate()).padStart(2,'0');
+  const mm = String(hoje.getMonth()+1).padStart(2,'0');
+  const yyyy = hoje.getFullYear();
+  document.getElementById('dataDia').value = `${yyyy}-${mm}-${dd}`;
+  carregarRelatorio();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Boteco do Belém - Cardápio</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+<header class="header">
+  <div class="logoWrap">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div class="headerTitle">Boteco do Belém</div>
+  </div>
+  <nav class="headerNav">
+    <a href="./index.html">Cardápio</a>
+    <a href="./comanda.html">Comanda</a>
+    <a href="./acompanhamento.html">Acompanhamento</a>
+    <a href="./relatorio.html">Relatórios</a>
+    <a href="./imprimir_whatsapp.html">Produção</a>
+    <a href="./caixa.html">Caixa</a>
+    <a href="./admin.html">Admin</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="h1">Cardápio <span class="badge" id="badgeCount">0 itens</span></div>
+    <div class="small">Selecione os produtos e envie direto para o WhatsApp.</div>
+
+    <div class="row" style="margin-top:10px">
+      <div>
+        <span class="label">Categoria</span>
+        <select id="fCategoria">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <span class="label">Buscar</span>
+        <input id="fBusca" placeholder="Ex.: SMASH, COCA..." />
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="cardGrid" id="gridProdutos"></div>
+  </div>
+</div>
+
+<div class="cartFloat">
+  <button class="cartBtn" id="btnCarrinho">Carrinho (0)</button>
+</div>
+
+<div class="cartPanel" id="cartPanel">
+  <div class="cartBox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="h2">Seu carrinho</div>
+      <button class="btn ghost" type="button" id="btnFecharCarrinho">Fechar</button>
+    </div>
+
+    <div class="small" style="margin-bottom:8px">
+      Dica: escreva a observação embaixo de cada item (ex.: ponto da carne, sem cebola, sem picles).
+    </div>
+
+    <div id="cartItens"></div>
+    <div style="margin-top:10px;font-weight:700" id="cartTotal"></div>
+
+    <div class="panel" style="margin-top:12px">
+      <div class="h2">Dados do pedido</div>
+
+      <div class="row" style="margin-top:8px">
+        <div>
+          <span class="label">Tipo</span>
+          <select id="tipoPedido">
+            <option value="balcao">Retirada/Balcão</option>
+            <option value="delivery">Delivery</option>
+          </select>
+        </div>
+        <div>
+          <span class="label">Nome</span>
+          <input id="nomeCliente" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:8px">
+        <div>
+          <span class="label">Endereço (delivery)</span>
+          <input id="enderecoCliente" />
+        </div>
+        <div>
+          <span class="label">Pagamento</span>
+          <select id="pagamento">
+            <option>Dinheiro</option>
+            <option>Pix</option>
+            <option>Cartão</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:8px">
+        <span class="label">Observações gerais (opcional)</span>
+        <textarea id="obsPedido"></textarea>
+      </div>
+
+      <div class="btnRow">
+        <button class="btn primary" type="button" id="btnEnviarWhats">Enviar no WhatsApp</button>
+        <button class="btn ghost" type="button" id="btnLimparCarrinho">Limpar carrinho</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./assets/js/app.js"></script>
+<script>
+let PRODUTOS_FILTRADOS = [];
+let CONFIG = {};
+
+function preencherFiltroCategorias(){
+  const sel = document.getElementById('fCategoria');
+  const cats = Array.from(new Set((PRODUTOS||[]).map(p=>String(p.category||'').trim()).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">Todas</option>';
+  cats.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+function aplicarFiltrosIndex(){
+  const cat = (document.getElementById('fCategoria').value || '').trim().toLowerCase();
+  const busca = (document.getElementById('fBusca').value || '').trim().toLowerCase();
+  let list = (PRODUTOS||[]).slice();
+
+  list = list.filter(p => p.active !== false);
+
+  if(cat){
+    list = list.filter(p => String(p.category||'').toLowerCase() === cat);
+  }
+
+  if(busca){
+    list = list.filter(p=>{
+      const code = String(p.code||'').toLowerCase();
+      const name = String(p.name||'').toLowerCase();
+      const desc = String(p.description||'').toLowerCase();
+      return code.includes(busca) || name.includes(busca) || desc.includes(busca);
+    });
+  }
+
+  PRODUTOS_FILTRADOS = list;
+  renderGrid();
+}
+
+function renderGrid(){
+  const grid = document.getElementById('gridProdutos');
+  grid.innerHTML = '';
+  document.getElementById('badgeCount').textContent = PRODUTOS_FILTRADOS.length + ' itens';
+
+  PRODUTOS_FILTRADOS.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div>
+        <div class="cardTitle">${p.name || ''}</div>
+        <div class="cardDesc">${p.description || ''}</div>
+      </div>
+      <div class="cardFooter">
+        <div class="cardPrice">${formatMoney(p.price)}</div>
+        <button class="btn primary" type="button" data-code="${p.code}">Adicionar</button>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+
+  grid.querySelectorAll('button[data-code]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      addItemCarrinho(this.getAttribute('data-code'));
+      atualizarResumoCarrinho();
+    });
+  });
+}
+
+function atualizarResumoCarrinho(){
+  const cart = getCarrinho();
+  const qtd = cart.reduce((s,i)=>s+(Number(i.qtd||0)),0);
+  document.getElementById('btnCarrinho').textContent = 'Carrinho (' + qtd + ')';
+}
+
+function abrirCarrinho(){
+  document.getElementById('cartPanel').classList.add('show');
+  renderCarrinhoDetalhe();
+}
+
+function fecharCarrinho(){
+  document.getElementById('cartPanel').classList.remove('show');
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>');
+}
+
+function renderCarrinhoDetalhe(){
+  const cart = getCarrinho();
+  const wrap = document.getElementById('cartItens');
+  const elTotal = document.getElementById('cartTotal');
+  wrap.innerHTML = '';
+
+  if(!cart.length){
+    wrap.innerHTML = '<div class="small">Seu carrinho está vazio.</div>';
+    elTotal.textContent = '';
+    return;
+  }
+
+  let total = 0;
+
+  cart.forEach((item, lineIndex)=>{
+    total += Number(item.price||0) * Number(item.qtd||0);
+
+    const obsValue = (item.obs || '');
+    const div = document.createElement('div');
+    div.style.marginBottom = '10px';
+
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1 1 auto">
+          <strong>${escapeHtml(item.name)}</strong><br/>
+          <span class="small">${formatMoney(item.price)} x ${item.qtd}</span>
+
+          <div style="margin-top:6px">
+            <span class="label" style="margin-bottom:4px">Obs do item</span>
+            <textarea class="itemObs" data-line="${lineIndex}" placeholder="Ex: ponto da carne, sem cebola, sem picles...">${escapeHtml(obsValue)}</textarea>
+          </div>
+        </div>
+
+        <div style="white-space:nowrap">
+          <button class="btn ghost" data-act="menos" data-line="${lineIndex}">-</button>
+          <button class="btn ghost" data-act="mais" data-line="${lineIndex}">+</button>
+        </div>
+      </div>
+    `;
+
+    wrap.appendChild(div);
+  });
+
+  elTotal.textContent = 'Total: ' + formatMoney(total);
+
+  wrap.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const act = this.getAttribute('data-act');
+      const line = parseInt(this.getAttribute('data-line'),10);
+      let cart = getCarrinho();
+      if(!cart[line]) return;
+
+      if(act === 'mais'){
+        cart[line].qtd = Number(cart[line].qtd||0) + 1;
+      }else{
+        cart[line].qtd = Number(cart[line].qtd||0) - 1;
+        if(cart[line].qtd <= 0) cart.splice(line,1);
+      }
+      salvarCarrinho(cart);
+      atualizarResumoCarrinho();
+      renderCarrinhoDetalhe();
+    });
+  });
+
+  wrap.querySelectorAll('textarea.itemObs').forEach(t=>{
+    t.addEventListener('input', function(){
+      const line = parseInt(this.getAttribute('data-line'),10);
+      let cart = getCarrinho();
+      if(!cart[line]) return;
+      cart[line].obs = this.value;
+      salvarCarrinho(cart);
+    });
+  });
+}
+
+function montarTextoWhatsapp(cart,total){
+  const tipo = document.getElementById('tipoPedido').value;
+  const nome = (document.getElementById('nomeCliente').value || '').trim();
+  const end  = (document.getElementById('enderecoCliente').value || '').trim();
+  const pag  = document.getElementById('pagamento').value;
+  const obsG = (document.getElementById('obsPedido').value || '').trim();
+
+  let txt = '*Pedido - Boteco do Belém*%0A%0A';
+
+  cart.forEach(i=>{
+    const obsItem = String(i.obs||'').trim();
+    txt += `- ${i.qtd}x ${i.name} (${formatMoney(i.price)})`;
+    if(obsItem) txt += ` %0A  Obs: ${encodeURIComponent(obsItem)}`;
+    txt += '%0A';
+  });
+
+  txt += `%0A*Total:* ${formatMoney(total)}%0A`;
+  txt += `*Tipo:* ${tipo === 'delivery' ? 'Delivery' : 'Retirada/Balcão'}%0A`;
+  if(nome) txt += `*Nome:* ${encodeURIComponent(nome)}%0A`;
+  if(end && tipo==='delivery') txt += `*Endereço:* ${encodeURIComponent(end)}%0A`;
+  txt += `*Pagamento:* ${encodeURIComponent(pag)}%0A`;
+  if(obsG) txt += `%0A*Obs geral:* ${encodeURIComponent(obsG)}%0A`;
+
+  return txt;
+}
+
+async function iniciar(){
+  await carregarProdutosBase();
+  CONFIG = carregarConfiguracoes();
+  preencherFiltroCategorias();
+  aplicarFiltrosIndex();
+  atualizarResumoCarrinho();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  iniciar();
+
+  document.getElementById('fCategoria').addEventListener('change', aplicarFiltrosIndex);
+  document.getElementById('fBusca').addEventListener('input', aplicarFiltrosIndex);
+
+  document.getElementById('btnCarrinho').addEventListener('click', abrirCarrinho);
+  document.getElementById('btnFecharCarrinho').addEventListener('click', fecharCarrinho);
+
+  document.getElementById('btnLimparCarrinho').addEventListener('click', function(){
+    salvarCarrinho([]);
+    atualizarResumoCarrinho();
+    renderCarrinhoDetalhe();
+  });
+
+  document.getElementById('btnEnviarWhats').addEventListener('click', function(){
+    const cart = getCarrinho();
+    if(!cart.length){
+      alert('Carrinho vazio.');
+      return;
+    }
+
+    let total = 0;
+    cart.forEach(i=> total += Number(i.price||0) * Number(i.qtd||0));
+
+    registrarPedido({
+      id: Date.now(),
+      data: new Date().toISOString(),
+      origem: 'app',
+      itens: cart,
+      total: total,
+      tipo: document.getElementById('tipoPedido').value,
+      nome: (document.getElementById('nomeCliente').value || '').trim(),
+      pagamento: document.getElementById('pagamento').value,
+      obs: (document.getElementById('obsPedido').value || '').trim()
+    });
+
+    const msg = montarTextoWhatsapp(cart,total);
+    const fone = CONFIG.whatsapp || '5549998358251';
+    const url = `https://wa.me/${fone}?text=${msg}`;
+    window.open(url,'_blank');
+  });
+});
+</script>
+</body>
+</html>

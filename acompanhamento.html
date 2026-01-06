@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Acompanhamento de Pedidos - Boteco do Belém</title>
+<style>
+body{margin:0;font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;background:#121212;color:#fff}
+header{background:linear-gradient(135deg,#8B4513 0%, #D2691E 100%);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header img{height:40px}
+a{color:#FFD700;text-decoration:none;font-weight:700}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.panel{background:#1e1e1e;border-radius:14px;border:1px solid rgba(255,255,255,.12);padding:14px;margin-bottom:14px}
+.h1{font-size:20px;font-weight:900;margin-bottom:8px}
+.btn{border-radius:999px;border:0;padding:10px 14px;font-weight:800;cursor:pointer;font-size:13px}
+.btn.primary{background:#FFD700;color:#121212}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff}
+.btn.success{background:#4caf50;color:#fff}
+.btn.danger{background:#d32f2f;color:#fff}
+.small{font-size:11px;color:#b6b6b6;margin-top:6px}
+.pedidoCard{background:#2a2a2a;border-radius:12px;border:1px solid rgba(255,255,255,.15);padding:12px;margin-bottom:10px}
+.pedidoHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pedidoTitulo{font-size:16px;font-weight:900}
+.pedidoStatus{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.statusPendente{background:#ff9800;color:#000}
+.statusPronto{background:#4caf50;color:#fff}
+.statusFinalizado{background:#666;color:#fff}
+.pedidoItens{font-size:12px;color:#ddd;margin-top:6px}
+.emptyState{padding:22px;text-align:center;color:#888;border:1px dashed rgba(255,255,255,.2);border-radius:10px;margin-top:14px}
+.btnRow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:8px">
+    <img src="./assets/img/logo.png" alt="Boteco do Belém" />
+    <div style="font-weight:900;font-size:15px">Acompanhamento de Pedidos</div>
+  </div>
+  <a href="./index.html">Voltar ao site</a>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="h1">Pedidos Ativos (Comandas + Vendas)</div>
+    <div class="btnRow">
+      <button class="btn ghost" onclick="carregarPedidos()">Atualizar</button>
+      <button class="btn danger" onclick="limparFinalizados()">Limpar finalizados</button>
+    </div>
+    <div class="small">Clique em "Pronto" quando o pedido estiver finalizado. Os pedidos ficam salvos neste aparelho.</div>
+  </div>
+
+  <div id="pedidosRoot"></div>
+</div>
+
+<script>
+const LS_COMANDAS_KEY = 'boteco_comandas_historico';
+const LS_VENDAS_KEY = 'boteco_vendas_historico';
+const LS_STATUS_KEY = 'boteco_pedidos_status';
+
+let STATUS_MAP = {};
+
+function loadStatusMap(){
+  try{
+    const raw = localStorage.getItem(LS_STATUS_KEY);
+    if(raw) STATUS_MAP = JSON.parse(raw) || {};
+    else STATUS_MAP = {};
+  }catch(e){
+    STATUS_MAP = {};
+  }
+}
+
+function saveStatusMap(){
+  localStorage.setItem(LS_STATUS_KEY, JSON.stringify(STATUS_MAP));
+}
+
+function formatDateTime(iso){
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return dd+'/'+mm+'/'+yyyy+' '+hh+':'+mi;
+}
+
+function loadList(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return [];
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function carregarPedidos(){
+  loadStatusMap();
+
+  const comandas = loadList(LS_COMANDAS_KEY);
+  const vendas = loadList(LS_VENDAS_KEY);
+
+  const pedidos = [];
+
+  comandas.forEach(c => {
+    const id = 'comanda_' + c.timestamp;
+    const status = STATUS_MAP[id] || 'pendente';
+    pedidos.push({
+      id: id,
+      tipo: 'Comanda',
+      timestamp: c.timestamp,
+      titulo: 'Comanda ' + (c.numero || '-') + ' • Mesa ' + (c.mesa || '-'),
+      garcom: c.garcom || '-',
+      itens: (c.itens || []).map(i => (i.qtd || 0) + 'x ' + (i.name || '')).join(', '),
+      status: status
+    });
+  });
+
+  vendas.forEach(v => {
+    const id = 'venda_' + v.timestamp;
+    const status = STATUS_MAP[id] || 'pendente';
+    pedidos.push({
+      id: id,
+      tipo: v.tipo || 'Venda',
+      timestamp: v.timestamp,
+      titulo: (v.tipo || 'Venda') + ' • ' + (v.cliente || '-'),
+      garcom: '',
+      itens: (v.itens || []).map(i => (i.qtd || 0) + 'x ' + (i.name || '')).join(', '),
+      status: status
+    });
+  });
+
+  pedidos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  renderPedidos(pedidos);
+}
+
+function renderPedidos(lista){
+  const root = document.getElementById('pedidosRoot');
+  root.innerHTML = '';
+
+  if(!lista || lista.length === 0){
+    root.innerHTML = '<div class="emptyState">Nenhum pedido encontrado.</div>';
+    return;
+  }
+
+  lista.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pedidoCard';
+
+    let statusClass = 'statusPendente';
+    let statusTexto = 'PENDENTE';
+    if(p.status === 'pronto'){
+      statusClass = 'statusPronto';
+      statusTexto = 'PRONTO';
+    } else if(p.status === 'finalizado'){
+      statusClass = 'statusFinalizado';
+      statusTexto = 'FINALIZADO';
+    }
+
+    card.innerHTML = `
+      <div class="pedidoHeader">
+        <div>
+          <div class="pedidoTitulo">${p.titulo}</div>
+          <div class="small">${formatDateTime(p.timestamp)}</div>
+        </div>
+        <div class="pedidoStatus ${statusClass}">${statusTexto}</div>
+      </div>
+      <div class="pedidoItens">${p.itens}</div>
+      <div class="btnRow">
+        ${p.status === 'pendente' ? '<button class="btn success" onclick="marcarPronto(\'' + p.id + '\')">Marcar como Pronto</button>' : ''}
+        ${p.status === 'pronto' ? '<button class="btn ghost" onclick="marcarFinalizado(\'' + p.id + '\')">Finalizar/Entregar</button>' : ''}
+        ${p.status === 'finalizado' ? '<span class="small">Pedido entregue/finalizado.</span>' : ''}
+      </div>
+    `;
+
+    root.appendChild(card);
+  });
+}
+
+function marcarPronto(id){
+  STATUS_MAP[id] = 'pronto';
+  saveStatusMap();
+  carregarPedidos();
+}
+
+function marcarFinalizado(id){
+  STATUS_MAP[id] = 'finalizado';
+  saveStatusMap();
+  carregarPedidos();
+}
+
+function limparFinalizados(){
+  if(!confirm('Isso vai remover da lista todos os pedidos marcados como "Finalizado". Continuar?')) return;
+  
+  for(let key in STATUS_MAP){
+    if(STATUS_MAP[key] === 'finalizado'){
+      delete STATUS_MAP[key];
+    }
+  }
+  
+  saveStatusMap();
+  carregarPedidos();
+  alert('Pedidos finalizados removidos da lista.');
+}
+
+document.addEventListener('DOMContentLoaded', carregarPedidos);
+</script>
+</body>
+</html>
+
