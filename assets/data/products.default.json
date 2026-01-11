@@ -3,57 +3,57 @@
     "code": "1",
     "name": "SMASH ONE SIMPLES",
     "category": "SMASH",
-    "description": "PÃO BRIOCHE, BLEND 100G, MAIONESE DE QUEIJO, PICLES E CEBOLA.",
-    "price": 20
+    "price": 20,
+    "description": "PÃO BRIOCHE BURGER 80G, QUEIJO MUSSARELA, CEBOLA PICLES E KETCHUP"
   },
   {
     "code": "2",
     "name": "SMASH ONE DUPLO",
     "category": "SMASH",
     "price": 28,
-    "description": "PÃO BRIOCHE, 2 BLEND 100G, MAIONESE DE QUEIJO, BACON, CEBOLA CARAMELIZADA E PICLE"
+    "description": "PÃO BRIOCHE 2BURGER 80G, QUEIJO MUSSARELA, CEBOLA PICLES E KETCHUP"
   },
   {
     "code": "3",
     "name": "SMASH BACON SIMPLES",
     "category": "SMASH",
-    "description": "PÃO BRIOCHE, BLEND 100G, MAIONESE DE QUEIJO, BACON, CEBOLA CARAMELIZADA E PICLES .",
-    "price": 27
+    "price": 27,
+    "description": "PÃO BRIOCHE, BURGER DE 80G, QUEIJO CHEDDAR, BACON, CEBOLA CARAMELIZADA PICLES E KETCHUP."
   },
   {
     "code": "4",
     "name": "SMASH BACON DUPLO",
     "category": "SMASH",
     "price": 35,
-    "description": "PÃO BRIOCHE, 2 BLEND 100G, MAIONESE DE QUEIJO, BACON, CEBOLA CARAMELIZADA E PICLES ."
+    "description": "PÃO BRIOCHE, 2BURGER DE 80G, QUEIJO CHEDDAR, BACON, CEBOLA CARAMELIZADA PICLES E KETCHUP.."
   },
   {
     "code": "5",
     "name": "CLASSICO",
     "category": "BURGER'S",
     "price": 30,
-    "description": "PÃO BRIOCHE, BLEND 150G, MUSSARELA, MAIONESE DE QUEIJO, ALFACE, TOMATE, CEBOLA ROXA E PICLES"
+    "description": "PÃO BRIOCHE, BLEND 160G, MUSSARELA, CREME DE QUEIJO, ALFACE, TOMATE, CEBOLA ROXA E PICLES"
   },
   {
     "code": "6",
     "name": "ONIO PORKS",
     "category": "BURGER'S",
     "price": 35,
-    "description": "PÃO BRIOCHE, BLEND 150G, PORKS 75G DESFIADO, MUSSARELA, CREME DE ALHO, BARBECUE, CEBOLA CRISPY."
+    "description": "PÃO BRIOCHE, BLEND 160G, PULLED PORKS COM CREME DE ALHO, BARBECUE, MUSSARELA CEBOLA CRISPY."
   },
   {
     "code": "7",
     "name": "BOI RALADO",
     "category": "BURGER'S",
     "price": 39,
-    "description": "PÃO BRIOCHE, BLEND 150G, PONTA DE PEITO DESFIADA 75G,CREME DE ALHO, MUSSARELA, CEBOLA CARAMELIZADA, ALFACE E TOMATE ASSADO."
+    "description": "PÃO BRIOCHE, BLEND 160G, CARNE BOVINA DESFIADA, MUSSARELA, CHEDDAR,ALFACE TOMATE, CEBOLA CARAMELIZADA,  E PICLES."
   },
   {
     "code": "8",
-    "name": "TEXAS",
+    "name": "TEXAS BBQ",
     "category": "BURGER'S",
     "price": 37,
-    "description": "PÃO BRIOCHE, BLEND 150G COM MUSSARELA, ALFACE, TOMATE ASSADO, CEBOLA EMPANADA, MOLHO TEXAS."
+    "description": "PÃO BRIOCHE, BLEND 160G MUSSARELA, MOLHO TEXAS, ALFACE, TOMATE ASSADO, CEBOLA EMPANADA."
   },
   {
     "code": "9",
@@ -113,17 +113,17 @@
   },
   {
     "code": "20",
-    "name": "SMASH ONION",
+    "name": "SMASH ONION SIMPLES",
     "category": "SMASH",
     "price": 29,
-    "description": "PAO BRIOCHE, BLEND 100G, CEBOLA EMPANADA,PORKS, DESFIADO, MUSSARELA E BARBECUE."
+    "description": "PAO BRIOCHE, BURGER 80G, SUINO DESFIADO, MOLHO BARBECUE CEBOLA EMPANADA E MUSSARELA."
   },
   {
     "code": "21",
     "name": "SMASH RALADO",
     "category": "SMASH",
-    "price": 29,
-    "description": "PAO BRIOCHE, BLEN 100G,CARNE BOVINA DESFIADA, CREME DE ALHO , MUSSARELA, ALFACE, TOMATE E CEBOLA CARAMELIZADA."
+    "price": 30,
+    "description": "PAO BRIOCHE, HAMBURGER 80G, BOVINO DESFIADO, MUSSARELA, ALFACE, TOMATE, CEBOLA E CREME DE ALHO."
   },
   {
     "code": "23",
@@ -215,5 +215,19 @@
     "category": "ADICIONAL",
     "price": 2,
     "description": ""
+  },
+  {
+    "code": "37",
+    "name": "SMASH ONION DUPLO",
+    "category": "SMASH",
+    "price": 37,
+    "description": "PAO BRIOCHE, BURGER 80G, SUINO DESFIADO, MOLHO BARBECUE CEBOLA EMPANADA E MUSSARELA."
+  },
+  {
+    "code": "38",
+    "name": "SMASH RALADO DUPLO",
+    "category": "SMASH",
+    "price": 39,
+    "description": "PAO BRIOCHE, 2 HAMBURGER 80G, BOVINO DESFIADO, MUSSARELA, ALFACE, TOMATE, CEBOLA E CREME DE ALHO."
   }
 ]
